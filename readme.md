@@ -51,7 +51,7 @@ python manage.py migrate
 6. Migrate Error codes
 
 ```commandline
-python manage.py populate errrors
+python manage.py populate errors
 ```
 
 7. Create Super User
@@ -90,7 +90,19 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
 # Dependencies
 
 List any external dependencies that are required to use in project listed in [requirements.txt](requirements.txt) file
-...
+
+Such as: 
+
+      asgiref==3.6.0
+      attrs==23.1.0
+      Django==4.2.1
+      jsonrpcserver==5.0.9
+      jsonschema==4.17.3
+      OSlash==0.6.3
+      pyrsistent==0.19.3
+      sqlparse==0.4.4
+      typing_extensions==4.5.0
+      tzdata==2023.3
 
 ---
 
