@@ -1,0 +1,27 @@
+# Django stuff
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+/venv
+/migrations/
+
+# Static files
+staticfiles/
+assets/
+
+# Media files
+media/
+
+# Secret key
+*.secret_key
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# Other
+*.swp
+.DS_Store
