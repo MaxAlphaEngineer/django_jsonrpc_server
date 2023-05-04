@@ -51,7 +51,7 @@ python manage.py migrate
 6. Migrate Error codes
 
 ```commandline
-python manage.py makeerrors
+python manage.py populate errrors
 ```
 
 7. Create Super User

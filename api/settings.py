@@ -28,6 +28,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+AUTH_USER_MODEL = 'v1.Partner'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
