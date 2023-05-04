@@ -42,4 +42,5 @@ class Command(BaseCommand):
         call_command('migrate')
 
         # TODO: Implementation populate error codes
+        call_command('populate', 'errors')
         # TODO: Implement create test superuser
