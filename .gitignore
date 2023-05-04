@@ -7,6 +7,7 @@ local_settings.py
 db.sqlite3
 /venv
 /migrations/
+*/migrations
 
 # Static files
 staticfiles/
