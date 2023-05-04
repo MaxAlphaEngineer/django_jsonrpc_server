@@ -1,13 +1,11 @@
 # Django - JsonRPC Server Template
 
 ---
-
 Django is a popular web framework that provides a wide range of tools and features for building web applications. One of the key benefits of Django is its support for building APIs, which can be used to power a wide range of web and mobile applications.
 
 JSON-RPC is a lightweight and efficient protocol for building APIs that use JSON (JavaScript Object Notation) as their data format. By using JSON-RPC with Django, developers can build powerful and scalable APIs that can be consumed by a wide range of client applications.
 
 Reasons why using Django with JSON-RPC:
-
 1. Simple and easy-to-use
 2. Lightweight and efficient
 3. Flexible and extensible
@@ -33,27 +31,23 @@ venv\Scripts\activate
 
 3. Install requirements.txt
 
-```
+```commandline
 pip install -r requirements.txt
 ```
 
 5. Make Migrations
 
 ```commandline
-
-python manage.py makemigrations
+python manage.py makemigrations v1
 python manage.py migrate
-
 ```
 
 6. Migrate Error codes
 
-```
+```commandline
 python manage.py makeerrors
-``` 
-
+```
 7. Create Super User
-
 ```
 python manage.py createsuperuser
 ``` 
@@ -82,7 +76,7 @@ Open in browser http://127.0.0.1:8000/admin
 
 List any external dependencies that are required to use your project, including their version numbers. For example:
 
-1. Django 3.2.4
+1. Django 4.2.1
 2. jsonrpcserver 5.0.2
    ...
 

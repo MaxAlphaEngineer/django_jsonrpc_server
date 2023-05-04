@@ -15,33 +15,17 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, Result, Success, dispatch
+from django.core.management import call_command, BaseCommand
 
 
-@method(name="login")
-def login() -> Result:
-    return Success("pong")
+class Command(BaseCommand):
+    help = 'Description of my custom command'
 
+    def handle(self, *args, **options):
+        app_name = 'v1'
+        call_command('makemigrations', app_name)
 
-@method
-def register() -> Result:
-    return Success("pong")
+        # Perform database migrations
+        call_command('migrate')
 
-
-@csrf_exempt
-def jsonrpc(request):
-    # TODO: check request
-
-    # TODO: authorize
-
-    # TODO: check method is allowed
-
-    # TODO: if logging is enabled for method start logging
-
-    # TODO: request count is enabled start counting
-
-    response = dispatch(request.body.decode())
-
-    return HttpResponse(response, content_type="application/json")
+        # Implementation of your command
