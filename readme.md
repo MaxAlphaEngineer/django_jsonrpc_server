@@ -34,7 +34,7 @@ venv\Scripts\activate
 3. Install requirements.txt
 
 ```
-pip install -r /path/to/requirements.txt
+pip install -r requirements.txt
 ```
 
 5. Make Migrations
