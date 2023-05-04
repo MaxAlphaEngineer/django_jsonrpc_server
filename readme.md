@@ -89,11 +89,8 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
 
 # Dependencies
 
-List any external dependencies that are required to use your project, including their version numbers. For example:
-
-1. Django 4.2.1
-2. jsonrpcserver 5.0.2
-   ...
+List any external dependencies that are required to use in project listed in   [requirements.txt](requirements.txt)file
+...
 
 ---
 
