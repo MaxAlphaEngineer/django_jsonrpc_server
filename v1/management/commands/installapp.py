@@ -15,17 +15,26 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
+import subprocess
+
 from django.core.management import call_command, BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Description of my custom command'
+    help = 'Command recommended only in initial run Project Processes: Install from requirements, make migrations, migrate, populate error codes and create test superuser '
 
     def handle(self, *args, **options):
+        # Call pip to install a package
+        self.stdout.write(self.style.SUCCESS('\nStarted Installation from requirements.txt\n'))
+        subprocess.run(['pip', 'install', '-r', 'requirements.txt'])
+
         app_name = 'v1'
+        self.stdout.write(self.style.SUCCESS(f'\nStarted make migrations: {app_name}\n'))
         call_command('makemigrations', app_name)
 
         # Perform database migrations
+        self.stdout.write(self.style.SUCCESS(f'\nStarted migration!\n'))
         call_command('migrate')
 
-        # Implementation of your command
+        # TODO: Implementation populate error codes
+        # TODO: Implement create test superuser
