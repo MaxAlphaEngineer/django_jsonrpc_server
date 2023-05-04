@@ -89,7 +89,7 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
 
 # Dependencies
 
-List any external dependencies that are required to use in project listed in   [requirements.txt](requirements.txt)file
+List any external dependencies that are required to use in project listed in [requirements.txt](requirements.txt) file
 ...
 
 ---
