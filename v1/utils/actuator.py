@@ -15,19 +15,47 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
+from datetime import datetime
+
+from django.http import JsonResponse
+
+
 class Actuator:
-    
-    def db_health(self):
-        pass
+    def __init__(self):
+        self.up_time = datetime.now()
 
-    def cache_health(self):
-        pass
+    def get_health(self, request):
+        start_time = datetime.now()
+        up_time = (start_time - self.up_time).total_seconds()
+        response = {
+            'status': 'UP',
+            'uptime': f'{up_time}s',
+            'db': db_status(start_time),
+            'cache': cache_status(start_time),
+            'memory': memory_status(start_time),
+        }
+        return JsonResponse(response)
 
-    def memory_health(self):
-        pass
 
-    def os_health(self):
-        pass
+def db_status(start_time):
+    elapsed_time = (datetime.now() - start_time).total_seconds()
+    return {
+        "status": "OK",
+        "elapsed_time": f'{elapsed_time}s',
+    }
 
-    def services_health(self):
-        pass
+
+def cache_status(start_time):
+    elapsed_time = (datetime.now() - start_time).total_seconds()
+    return {
+        "status": "OK",
+        "elapsed_time": f'{elapsed_time}s',
+    }
+
+
+def memory_status(start_time):
+    elapsed_time = (datetime.now() - start_time).total_seconds()
+    return {
+        "status": "OK",
+        "elapsed_time": f'{elapsed_time}s',
+    }

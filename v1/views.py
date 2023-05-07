@@ -21,7 +21,7 @@ from jsonrpcserver import method, Result, Success, dispatch
 
 
 @method(name="login")
-def login() -> Result:
+def login(username, password) -> Result:
     return Success("pong")
 
 
