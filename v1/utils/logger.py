@@ -17,7 +17,6 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import os
-
 from datetime import datetime
 
 
@@ -60,6 +59,7 @@ class APILoggerMiddleware:
             method = request.method
             client = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
             body = request.body
+            # body = json_format(request)
             content = response.content
             duration = (end_time - start_time).total_seconds()
 
@@ -79,10 +79,14 @@ class APILoggerMiddleware:
             response = {
                 "error": {
                     "code": 500,
-                    "message": str(e)
+                    "message": "str(e)"
                 }
             }
             print(f'TODO: Handle in case of exception {str(e)}')
 
         # Return response
         return response
+
+
+def json_format(data):
+    pass
