@@ -17,7 +17,7 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import os
-# TODO: Implement Logging mechanism
+
 from datetime import datetime
 
 
@@ -35,48 +35,54 @@ class APILoggerMiddleware:
             # Request proceed timestamp
             end_time = datetime.now()
 
+            # Log the API request and response
+            logger = logging.getLogger('api')
+            logger.setLevel(logging.DEBUG)
+
+            # Create the log directory if it doesn't exist
+            log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y/%m'))
+            os.makedirs(log_dir, exist_ok=True)
+
+            # Create the log file handler
+            log_file = os.path.join(log_dir, datetime.now().strftime('%d.log'))
+            fh = logging.FileHandler(log_file)
+            fh.setLevel(logging.DEBUG)
+
+            # Define the log format
+            log_format = f'---------------| %(asctime)s - %(levelname)s |---------------%(message)s'
+            formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
+            fh.setFormatter(formatter)
+            # Add the file handler to the logger
+            logger.addHandler(fh)
+
+            # Fetch
+            host = request.get_host() + request.path
+            method = request.method
+            client = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
+            body = request.body
+            content = response.content
+            duration = (end_time - start_time).total_seconds()
+
+            # Create message
+            message = f"\nHost: {host}" \
+                      f"\nMethod: {method}" \
+                      f"\nClient: {client} " \
+                      f"\nRequest: {body}" \
+                      f"\nResponse: {content}" \
+                      f"\nDuration: {duration} s"
+
+            # Save log info
+            logger.info(message)
+
         # TODO: In case of exception according request content return response
         except Exception as e:
+            response = {
+                "error": {
+                    "code": 500,
+                    "message": str(e)
+                }
+            }
             print(f'TODO: Handle in case of exception {str(e)}')
-
-        # Log the API request and response
-        logger = logging.getLogger('api')
-        logger.setLevel(logging.DEBUG)
-
-        # Create the log directory if it doesn't exist
-        log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y/%m'))
-        os.makedirs(log_dir, exist_ok=True)
-
-        # Create the log file handler
-        log_file = os.path.join(log_dir, datetime.now().strftime('%d.log'))
-        fh = logging.FileHandler(log_file)
-        fh.setLevel(logging.DEBUG)
-
-        # Define the log format
-        log_format = f'---------------| %(asctime)s - %(levelname)s |---------------%(message)s'
-        formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
-        fh.setFormatter(formatter)
-        # Add the file handler to the logger
-        logger.addHandler(fh)
-
-        # Fetch
-        host = request.get_host() + request.path
-        method = request.method
-        client = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
-        body = request.body
-        content = response.content
-        duration = (end_time - start_time).total_seconds()
-
-        # Create message
-        message = f"\nHost: {host}" \
-                  f"\nMethod: {method}" \
-                  f"\nClient: {client} " \
-                  f"\nRequest: {body}" \
-                  f"\nResponse: {content}" \
-                  f"\nDuration: {duration} s"
-
-        # Save log info
-        logger.info(message)
 
         # Return response
         return response
