@@ -103,7 +103,6 @@ Such as:
       sqlparse==0.4.4
       typing_extensions==4.5.0
       tzdata==2023.3
-
 ---
 
 # Configuration
