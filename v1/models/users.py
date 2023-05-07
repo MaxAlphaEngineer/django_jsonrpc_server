@@ -15,8 +15,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-
-import uuid
+import hashlib
+import time
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.base_user import BaseUserManager
@@ -66,9 +66,16 @@ class Partner(AbstractBaseUser, PermissionsMixin):
 
 class AccessToken(models.Model):
     Partner = models.ForeignKey(Partner, on_delete=models.CASCADE, related_name="access_token")
-    key = models.CharField(max_length=128)
+    key = models.CharField(max_length=256)
 
     def generate(self):
-        self.key = f"{uuid.uuid4()}/{uuid.uuid4()}"
+        timestamp = str(time.time()).encode()
+
+        key = f"{self.Partner.username}:{self.Partner.password}:{timestamp.decode()}"
+
+        hash_object = hashlib.sha256(key.encode())
+
+        self.key = hash_object.hexdigest()
         self.save()
+
         return self.key

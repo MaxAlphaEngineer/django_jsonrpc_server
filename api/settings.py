@@ -123,31 +123,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': BASE_DIR / 'logs/01.log',
-            # 'filename': BASE_DIR / 'logs/%Y/%m/%d.log',
-            'when': 'D',
-            'interval': 1,
-            'backupCount': 7,
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'myapp': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '%(asctime)s [%(levelname)s] %(module)s %(message)s'
-        },
-    },
-}
+LOGS_DIR = BASE_DIR / 'logs'
+
+if not LOGS_DIR.exists():
+    LOGS_DIR.mkdir()

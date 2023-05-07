@@ -15,31 +15,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-import json
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, Result, Success, dispatch
-
-from v1.modules.authorization import generate_custom_token
-from v1.utils.decorators import requires_json
-
-
-@method(name="login")
-def login(username, password, refresh=False) -> Result:
-    response = generate_custom_token(username=username, password=password, refresh=refresh)
-    print(response)
-    return Success(response)
-
-
-@method
-def register() -> Result:
-    return Success("pong")
-
-
-@csrf_exempt
-@requires_json
-def jsonrpc(request):
-    response = dispatch(request)
-
-    return JsonResponse(json.loads(response), safe=False)

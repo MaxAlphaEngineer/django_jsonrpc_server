@@ -15,31 +15,34 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-import json
+import ujson as ujson
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, Result, Success, dispatch
-
-from v1.modules.authorization import generate_custom_token
-from v1.utils.decorators import requires_json
+from v1.utils.helper import error_message
 
 
-@method(name="login")
-def login(username, password, refresh=False) -> Result:
-    response = generate_custom_token(username=username, password=password, refresh=refresh)
-    print(response)
-    return Success(response)
+def requires_json(view_func):
+    def wrapper(request, *args, **kwargs):
+        # Check valid json format
+        try:
+            ujson.loads(request.body)
+            # Check contenttype of request
+            if not request.content_type == 'application/json':
+                return error_message(-32700, rpc=True, json_response=True)
+
+            request = request.body.decode()
+        except ValueError:
+            return error_message(-32700, rpc=True, json_response=True)
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
-@method
-def register() -> Result:
-    return Success("pong")
+def authorize():
+    # TODO: authorize
 
+    # TODO: check method is allowed
 
-@csrf_exempt
-@requires_json
-def jsonrpc(request):
-    response = dispatch(request)
+    # TODO: if logging is enabled for method start logging
 
-    return JsonResponse(json.loads(response), safe=False)
+    # TODO: request count is enabled start counting
+    pass
