@@ -20,7 +20,7 @@ from django.contrib.auth import authenticate
 from v1.models.users import AccessToken
 
 
-def generate_custom_token(username, password, refresh):
+def login(username, password, refresh):
     user = authenticate(username=username, password=password)
     if user is not None and user.is_active:
         token = AccessToken.objects.filter(Partner=user)
@@ -41,3 +41,7 @@ def generate_custom_token(username, password, refresh):
 
     else:
         raise Exception('Invalid credentials')
+
+
+def register(username, password):
+    pass

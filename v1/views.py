@@ -21,14 +21,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, Result, Success, dispatch
 
-from v1.modules.authorization import generate_custom_token
+from v1.modules import authorization
 from v1.utils.decorators import requires_json
 
 
 @method(name="login")
 def login(username, password, refresh=False) -> Result:
-    response = generate_custom_token(username=username, password=password, refresh=refresh)
-    print(response)
+    response = authorization.login(username=username, password=password, refresh=refresh)
     return Success(response)
 
 
