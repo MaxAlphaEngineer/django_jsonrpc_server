@@ -26,6 +26,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
+NO_LOGIN_METHODS = ['login']
+
 # Application definition
 
 AUTH_USER_MODEL = 'v1.Partner'

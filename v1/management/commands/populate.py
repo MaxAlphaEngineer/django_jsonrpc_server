@@ -135,6 +135,14 @@ rpc_errors = [
         "ru": "Ошибка тайм-аута при подключения",
         "en": "Connect timeout error occurred"
     },
+
+    {
+        "code": -32105,
+        "origin": "permission",
+        "uz": "Ruxsat etilmagan metod so'rovi",
+        "ru": "Недопустимый запрос метода",
+        "en": "Not allowed method request"
+    },
     # TERMINAL
 
     {

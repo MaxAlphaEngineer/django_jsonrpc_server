@@ -15,34 +15,71 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-import ujson as ujson
+import json
+import time
 
+from django.conf import settings
+from django.contrib.auth.models import Permission
+from django.core.exceptions import ObjectDoesNotExist
+
+from v1.models import Partner
 from v1.utils.helper import error_message
 
 
 def requires_json(view_func):
     def wrapper(request, *args, **kwargs):
+        request.start_time = time.time()
+
         # Check valid json format
         try:
-            ujson.loads(request.body)
-            # Check contenttype of request
-            if not request.content_type == 'application/json':
+            payload = json.loads(request.body)
+            # Check contenttype of request and method type
+            if not request.content_type == 'application/json' or request.method != 'POST':
                 return error_message(-32700, rpc=True, json_response=True)
 
-            request = request.body.decode()
+            # Request Encode
+            request.data = request.body.decode()
         except ValueError:
             return error_message(-32700, rpc=True, json_response=True)
+
+        request.id = payload['id']
+
+        request.rpc_method = payload['method']
+
+        # Check method is allowed without login or not ?
+        if request.rpc_method not in settings.NO_LOGIN_METHODS:
+            # TODO: authorize
+            # Check if Authorization header is present
+            if 'Authorization' in request.headers:
+                auth_header = request.headers['Authorization']
+                if auth_header.startswith('Bearer '):
+                    token = auth_header.split(' ')[1]
+
+                    # Authenticate the user based on the token
+                    try:
+                        user = Partner.objects.get(access_token__key=token)
+                        request.user = user
+
+                    except Partner.DoesNotExist:
+                        return error_message(-32103, rpc=True, json_response=True)
+            else:
+                return error_message(-32102, rpc=True, json_response=True)
+
+        # Check method is allowed for user
+        try:
+            # Retrieve the user from the request
+            user = request.user
+
+            # Check if the user has the permission
+            permission = Permission.objects.get(codename=payload['method'])
+            print(user.has_perm(permission))
+        except (ObjectDoesNotExist, AttributeError):
+            return error_message(-32105, rpc=True, json_response=True)
+
+        # TODO: if logging is enabled for method start logging
+
+        # TODO: request count is enabled start counting
+
         return view_func(request, *args, **kwargs)
 
     return wrapper
-
-
-def authorize():
-    # TODO: authorize
-
-    # TODO: check method is allowed
-
-    # TODO: if logging is enabled for method start logging
-
-    # TODO: request count is enabled start counting
-    pass

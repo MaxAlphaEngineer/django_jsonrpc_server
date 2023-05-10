@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 import datetime
+import json
 
 from django.http import JsonResponse
 
@@ -77,3 +78,7 @@ def error_message(code, message=None, origin="", request_id=None, wrapper=False,
         return RpcError(code, message)
 
     return data
+
+
+def json_response(data):
+    return JsonResponse(json.loads(data), safe=False)
