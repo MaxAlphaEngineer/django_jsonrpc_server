@@ -20,10 +20,14 @@ import time
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 
 from v1.models import Partner
+from v1.models.service import Services
 from v1.utils.helper import error_message
+
+APP_LABEL = 'v1'
 
 
 def requires_json(view_func):
@@ -64,17 +68,40 @@ def requires_json(view_func):
                         return error_message(-32103, rpc=True, json_response=True)
             else:
                 return error_message(-32102, rpc=True, json_response=True)
+        # -------------------------------------------------------------------------------------------------------------------------------
+        # Get the content type of the desired model associated with the view
+        permission = Permission.objects.filter(codename=payload['method'])
+        if not permission.exists():
+            content_type = ContentType.objects.filter(app_label=APP_LABEL).first()
+            print(content_type)
+            # Create the permission associated with the app
+            permission = Permission.objects.create(
+                codename=payload['method'],
+                name=payload['method'],
+                content_type=content_type,
+            )
+            print(permission)
 
+        # -------------------------------------------------------------------------------------------------------------------------------
+
+        service = Services.objects.filter(method_name=payload['method'])
+        if not service.exists():
+            Services.objects.create(method_name=payload['method'])
+        else:
+            service = service.first()
+            if service.status != 0:
+                return error_message(service.status, rpc=True, json_response=True)
         # Check method is allowed for user
         try:
-            # Retrieve the user from the request
-            user = request.user
-
             # Check if the user has the permission
-            permission = Permission.objects.get(codename=payload['method'])
-            print(user.has_perm(permission))
+
+            permission = f"{APP_LABEL}.{request.rpc_method}"
+            print(request.user.has_perm(permission))
+            if not request.user.has_perm(permission):
+                # User does not have the permission
+                return error_message(-32105, rpc=True, json_response=True)
         except (ObjectDoesNotExist, AttributeError):
-            return error_message(-32105, rpc=True, json_response=True)
+            return error_message(-32106, rpc=True, json_response=True)
 
         # TODO: if logging is enabled for method start logging
 

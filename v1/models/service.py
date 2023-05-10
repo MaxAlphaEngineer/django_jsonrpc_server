@@ -15,6 +15,21 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from v1.models.errors import Error
-from v1.models.service import Services
-from v1.models.users import Partner
+from django.db import models
+
+
+class Services(models.Model):
+    class StatusType(models.Choices):
+        ACTIVE = 0
+        TEMPORARILY = 1
+        DEPRECATED = 2
+
+    method_name = models.CharField(max_length=50, default="")
+    status = models.SmallIntegerField(default=0, choices=StatusType.choices)
+    is_test = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "Services"
+
+    def __str__(self):
+        return f'Services Status: {self.method_name}: {self.status}'

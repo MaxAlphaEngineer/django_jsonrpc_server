@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
+from v1.models import Services
 from v1.models.users import Partner
 
 
@@ -16,3 +17,8 @@ class PartnerAdmin(UserAdmin):
         (_("Permissions"),
          {"fields": ("is_active", "is_test", "is_staff", "is_superuser", "groups", "user_permissions")})
     )
+
+
+@admin.register(Services)
+class ServicesAdminModel(admin.ModelAdmin):
+    list_display = [field.name for field in Services._meta.fields]

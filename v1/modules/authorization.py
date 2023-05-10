@@ -23,6 +23,7 @@ from v1.utils.helper import error_message
 
 def login(username, password, refresh):
     user = authenticate(username=username, password=password)
+    print(user)
     if user is not None and user.is_active:
         token = AccessToken.objects.filter(Partner=user)
         if token.exists():

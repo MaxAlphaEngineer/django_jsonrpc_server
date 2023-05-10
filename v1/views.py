@@ -27,6 +27,7 @@ from v1.utils.helper import json_response
 @method(name="login")
 def login(username, password, refresh=False) -> Result:
     response = authorization.login(username=username, password=password, refresh=refresh)
+    print(response)
     return Success(response)
 
 
@@ -38,6 +39,7 @@ def register() -> Result:
 @csrf_exempt
 @requires_json
 def jsonrpc(request):
+    print(request)
     response = dispatch(request.data)
 
     return json_response(response)
