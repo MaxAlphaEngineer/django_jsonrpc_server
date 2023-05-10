@@ -59,20 +59,20 @@ class Command(BaseCommand):
 
 
 def users():
-    username = 'admin'
+    admin = 'admin'
+    test = 'test'
     password = 'password'
-    if not Partner.objects.filter(username=username).exists():
-        Partner.objects.create_superuser(username=username, password=password)
-    print("Superuser created successfully!")
+    if not Partner.objects.filter(username=admin).exists():
+        Partner.objects.create_superuser(username=admin, password=password, is_active=True, chat_id='-')
+        print("Superuser created successfully!")
+    else:
+        print("Superuser already exists!")
 
-    # username = 'admin'
-    # email = 'admin@example.com'
-    # password = 'password'
-    # if not User.objects.filter(username=username).exists():
-    #     User.objects.create_superuser(username, email, password)
-    #     self.stdout.write(self.style.SUCCESS('Superuser created successfully'))
-    # else:
-    #     self.stdout.write(self.style.WARNING('Superuser already exists'))
+    if not Partner.objects.filter(username=test).exists():
+        Partner.objects.create_user(username=test, password=password, is_active=True, chat_id='-')
+        print("Test user created successfully!")
+    else:
+        print("Test user already exists!")
 
 
 def errors():

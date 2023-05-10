@@ -81,4 +81,15 @@ def error_message(code, message=None, origin="", request_id=None, wrapper=False,
 
 
 def json_response(data):
+    # data['status']: False
+    #
+    # if 'result' in data:
+    #     data['status']: True
+    #
+    # host = {
+    #     "host": "settings.APP_NAME",
+    #     "timestamp": str(datetime.datetime.now())}
+    #
+    # data['host']: host
+
     return JsonResponse(json.loads(data), safe=False)
