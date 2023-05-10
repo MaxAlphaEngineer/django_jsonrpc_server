@@ -16,7 +16,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 import json
-import time
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -32,11 +31,13 @@ APP_LABEL = 'v1'
 
 def requires_json(view_func):
     def wrapper(request, *args, **kwargs):
-        request.start_time = time.time()
-
+        # --------------------------------------------------------------------------------------------------------------
         # Check valid json format
         try:
             payload = json.loads(request.body)
+            request.id = payload['id']
+            request.rpc_method = payload['method']
+            request.params = payload['params']
             # Check contenttype of request and method type
             if not request.content_type == 'application/json' or request.method != 'POST':
                 return error_message(-32700, rpc=True, json_response=True)
@@ -45,14 +46,12 @@ def requires_json(view_func):
             request.data = request.body.decode()
         except ValueError:
             return error_message(-32700, rpc=True, json_response=True)
+        except KeyError:
+            return error_message(-32701, rpc=True, json_response=True)
 
-        request.id = payload['id']
-
-        request.rpc_method = payload['method']
-
+        # --------------------------------------------------------------------------------------------------------------
         # Check method is allowed without login or not ?
         if request.rpc_method not in settings.NO_LOGIN_METHODS:
-            # TODO: authorize
             # Check if Authorization header is present
             if 'Authorization' in request.headers:
                 auth_header = request.headers['Authorization']
@@ -64,45 +63,39 @@ def requires_json(view_func):
                         user = Partner.objects.get(access_token__key=token)
                         request.user = user
 
+                        # ----------------------------------------------------------------------------------------------
+                        # Get the content type of the desired model associated with the view
+                        permission = Permission.objects.filter(codename=request.rpc_method)
+                        if not permission.exists():
+                            # Create the permission associated with the app
+                            content_type = ContentType.objects.filter(app_label=APP_LABEL).first()
+                            Permission.objects.create(codename=request.rpc_method, name=request.rpc_method,
+                                                      content_type=content_type)
+
+                        # ----------------------------------------------------------------------------------------------
+                        # Check if the user has the permission
+                        try:
+                            permission = f"{APP_LABEL}.{request.rpc_method}"
+
+                            if not request.user.has_perm(permission):
+                                # User does not have the permission
+                                return error_message(-32105, rpc=True, json_response=True)
+                        except (ObjectDoesNotExist, AttributeError):
+                            return error_message(-32106, rpc=True, json_response=True)
                     except Partner.DoesNotExist:
                         return error_message(-32103, rpc=True, json_response=True)
             else:
                 return error_message(-32102, rpc=True, json_response=True)
-        # -------------------------------------------------------------------------------------------------------------------------------
-        # Get the content type of the desired model associated with the view
-        permission = Permission.objects.filter(codename=payload['method'])
-        if not permission.exists():
-            content_type = ContentType.objects.filter(app_label=APP_LABEL).first()
-            print(content_type)
-            # Create the permission associated with the app
-            permission = Permission.objects.create(
-                codename=payload['method'],
-                name=payload['method'],
-                content_type=content_type,
-            )
-            print(permission)
 
-        # -------------------------------------------------------------------------------------------------------------------------------
-
-        service = Services.objects.filter(method_name=payload['method'])
+        # --------------------------------------------------------------------------------------------------------------
+        service = Services.objects.filter(method_name=request.rpc_method)
         if not service.exists():
-            Services.objects.create(method_name=payload['method'])
+            Services.objects.create(method_name=request.rpc_method)
         else:
             service = service.first()
             if service.status != 0:
                 return error_message(service.status, rpc=True, json_response=True)
-        # Check method is allowed for user
-        try:
-            # Check if the user has the permission
-
-            permission = f"{APP_LABEL}.{request.rpc_method}"
-            print(request.user.has_perm(permission))
-            if not request.user.has_perm(permission):
-                # User does not have the permission
-                return error_message(-32105, rpc=True, json_response=True)
-        except (ObjectDoesNotExist, AttributeError):
-            return error_message(-32106, rpc=True, json_response=True)
-
+        # --------------------------------------------------------------------------------------------------------------
         # TODO: if logging is enabled for method start logging
 
         # TODO: request count is enabled start counting

@@ -104,6 +104,13 @@ rpc_errors = [
         "ru": "Тело запроса неверно",
         "en": "Request body incorrect"
     },
+    {
+        "code": -32701,
+        "origin": "parse",
+        "uz": "JsonRPC qiymatlari formati yaroqsiz",
+        "ru": "Недопустимый формат значений JsonRPC",
+        "en": "JsonRPC values format is not valid"
+    },
 
     # AUTHORIZATION
     {
