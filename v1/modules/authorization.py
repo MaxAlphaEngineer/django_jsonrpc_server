@@ -18,6 +18,7 @@
 from django.contrib.auth import authenticate
 
 from v1.models.users import AccessToken
+from v1.utils.helper import error_message
 
 
 def login(username, password, refresh):
@@ -40,7 +41,7 @@ def login(username, password, refresh):
             }
 
     else:
-        raise Exception('Invalid credentials')
+        return error_message(-32101, rpc=True, json_response=True)
 
 
 def register(username, password):
