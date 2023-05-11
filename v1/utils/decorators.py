@@ -31,8 +31,7 @@ APP_LABEL = 'v1'
 
 def requires_json(view_func):
     def wrapper(request, *args, **kwargs):
-        # --------------------------------------------------------------------------------------------------------------
-        # Check valid json format
+        # --------------------------------------------------------------------------------------------------------------# Check valid json format
         try:
             payload = json.loads(request.body)
             request.id = payload['id']
@@ -49,8 +48,7 @@ def requires_json(view_func):
         except KeyError:
             return error_message(-32701, rpc=True, json_response=True)
 
-        # --------------------------------------------------------------------------------------------------------------
-        # Check method is allowed without login or not ?
+        # --------------------------------------------------------------------------------------------------------------# Check method is allowed without token
         if request.rpc_method not in settings.NO_LOGIN_METHODS:
             # Check if Authorization header is present
             if 'Authorization' in request.headers:
@@ -63,17 +61,16 @@ def requires_json(view_func):
                         user = Partner.objects.get(access_token__key=token)
                         request.user = user
 
-                        # ----------------------------------------------------------------------------------------------
+                        # ----------------------------------------------------------------------------------------------# Create Permission if not exists
                         # Get the content type of the desired model associated with the view
-                        permission = Permission.objects.filter(codename=request.rpc_method)
-                        if not permission.exists():
+                        permission = Permission.objects.filter(codename=request.rpc_method).first()
+                        if not permission:
                             # Create the permission associated with the app
-                            content_type = ContentType.objects.filter(app_label=APP_LABEL).first()
+                            c_t = ContentType.objects.filter(app_label=APP_LABEL).first()
                             Permission.objects.create(codename=request.rpc_method, name=request.rpc_method,
-                                                      content_type=content_type)
+                                                      content_type=c_t)
 
-                        # ----------------------------------------------------------------------------------------------
-                        # Check if the user has the permission
+                        # ----------------------------------------------------------------------------------------------# Check if the user has the permission
                         try:
                             permission = f"{APP_LABEL}.{request.rpc_method}"
 
@@ -87,17 +84,16 @@ def requires_json(view_func):
             else:
                 return error_message(-32102, rpc=True, json_response=True)
 
-        # --------------------------------------------------------------------------------------------------------------
-        service = Services.objects.filter(method_name=request.rpc_method)
-        if not service.exists():
-            Services.objects.create(method_name=request.rpc_method)
-        else:
-            service = service.first()
-            if service.status != 0:
-                return error_message(service.status, rpc=True, json_response=True)
-        # --------------------------------------------------------------------------------------------------------------
-        # TODO: if logging is enabled for method start logging
+        # --------------------------------------------------------------------------------------------------------------# Check Service status
+        service = Services.objects.filter(method_name=request.rpc_method).first()
+        if not service:
+            service = Services.objects.create(method_name=request.rpc_method)
 
+        if service.status != 0:
+            return error_message(service.status, rpc=True, json_response=True)
+
+        request.service = service
+        # --------------------------------------------------------------------------------------------------------------
         # TODO: request count is enabled start counting
 
         return view_func(request, *args, **kwargs)

@@ -24,12 +24,18 @@ class Services(models.Model):
         TEMPORARILY = 1
         DEPRECATED = 2
 
+    class LoggingType(models.Choices):
+        OFF = 0
+        USER_BASED = 1
+        SERVICE_BASED = 2
+
     method_name = models.CharField(max_length=50, default="")
     status = models.SmallIntegerField(default=0, choices=StatusType.choices)
+    logging = models.SmallIntegerField(default=0, choices=LoggingType.choices)
     is_test = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Services"
 
     def __str__(self):
-        return f'Services Status: {self.method_name}: {self.status}'
+        return f'Service: {self.method_name} -> status: {self.LoggingType.choices[self.status][1]}'

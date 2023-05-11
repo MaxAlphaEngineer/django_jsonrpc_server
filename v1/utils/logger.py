@@ -19,6 +19,8 @@ import logging
 import os
 from datetime import datetime
 
+from v1.utils.helper import json_response
+
 
 class APILoggerMiddleware:
     def __init__(self, get_response):
@@ -30,7 +32,6 @@ class APILoggerMiddleware:
 
         try:
             response = self.get_response(request)
-
             # Request proceed timestamp
             end_time = datetime.now()
 
@@ -59,7 +60,6 @@ class APILoggerMiddleware:
             method = request.method
             client = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
             body = request.body
-            # body = json_format(request)
             content = response.content
             duration = (end_time - start_time).total_seconds()
 
@@ -73,20 +73,24 @@ class APILoggerMiddleware:
 
             # Save log info
             logger.info(message)
+            # Return response
+            return response
 
-        # TODO: In case of exception according request content return response
+        # In case of exception according request content return response
         except Exception as e:
-            response = {
-                "error": {
-                    "code": 500,
-                    "message": "str(e)"
+            if request.method == 'POST' and request.content_type == 'application/json':
+                error_response = {
+                    "jsonrpc": "2.0",
+                    "error": {
+                        "code": -999,
+                        "message": "Invalid params",
+                        "data": str(e)
+                    },
+                    "id": None
                 }
-            }
-            print(f'TODO: Handle in case of exception {str(e)}')
-
-        # Return response
-        return response
+                return json_response(error_response)
 
 
-def json_format(data):
+# TODO: Log request and response according service->logging_type
+def log_service_call(request, response, service=None, start_time=None):
     pass

@@ -40,4 +40,6 @@ def register() -> Result:
 def jsonrpc(request):
     response = dispatch(request.data)
 
+    print(request.service)
+
     return json_response(response)
