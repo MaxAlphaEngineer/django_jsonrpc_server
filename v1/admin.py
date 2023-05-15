@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from v1.models import Services
+from v1.models import Services, Error
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
 from v1.models.users import Partner
 
@@ -32,24 +32,28 @@ class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
     fields = ['service', 'duration', 'start_timestamp']
 
     def save_model(self, request, obj, form, change):
+        # Get start time
         obj.start_timestamp = timezone.now()
 
+        # Get duration in minutes
         duration = obj.duration
-        obj.end_timestamp = obj.start_timestamp + duration
 
+        # calculate end_timestamp
+        obj.end_timestamp = obj.start_timestamp + timezone.timedelta(minutes=duration)
+
+        # Create TIP
         obj.save()
 
-        # Set Service status to TEMPORARILY = 1
+        # Set Service status to TEMPORARILY
+        # TODO: in case of not recent  start_timestamp do further changes
         service = obj.service
-        service.status = 1
+        service.status = Services.StatusType.TEMPORARILY.value
         service.save()
-
-        # Schedule task to set Service status back to ACTIVE = 0 after the period ends
-        # end_timestamp = obj.end_timestamp
-        # now = timezone.now()
-        # if end_timestamp > now:
-        #     delay = (end_timestamp - now).total_seconds()
-        #     set_active_status.delay(service.id, delay)  # Assuming you have an asynchronous task to update the status
 
 
 admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
+
+
+@admin.register(Error)
+class ErrorAdminModel(admin.ModelAdmin):
+    list_display = [field.name for field in Error._meta.fields]

@@ -35,6 +35,11 @@ def register() -> Result:
     return Success("pong")
 
 
+@method
+def create() -> Result:
+    return Success("Create")
+
+
 @csrf_exempt
 @requires_json
 def jsonrpc(request):

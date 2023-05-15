@@ -89,7 +89,7 @@ def requires_json(view_func):
         if not service:
             service = Services.objects.create(method_name=request.rpc_method)
 
-        if service.status != 0:
+        if service.is_active() != Services.StatusType.ACTIVE.value:
             return error_message(service.status, rpc=True, json_response=True)
 
         request.service = service

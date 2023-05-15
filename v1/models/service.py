@@ -15,6 +15,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
+
+from django import forms
 from django.db import models
 from django.utils import timezone
 
@@ -31,8 +33,8 @@ class Services(models.Model):
         SERVICE_BASED = 2
 
     method_name = models.CharField(max_length=50, default="")
-    status = models.SmallIntegerField(default=0, choices=StatusType.choices)
-    logging = models.SmallIntegerField(default=0, choices=LoggingType.choices)
+    status = models.SmallIntegerField(default=StatusType.ACTIVE.value, choices=StatusType.choices)
+    logging = models.SmallIntegerField(default=LoggingType.OFF.value, choices=LoggingType.choices)
     is_test = models.BooleanField(default=False)
 
     class Meta:
@@ -41,26 +43,32 @@ class Services(models.Model):
     def __str__(self):
         return f'Service: {self.method_name} -> status: {self.StatusType.choices[self.status][1]}'
 
+    def is_active(self):
+        now = timezone.now()
+
+        tip = TechnicalIssuePeriod.objects.filter(
+            service_id=self.id,
+            start_timestamp__lte=now,
+            end_timestamp__gte=now
+        ).exists()
+
+        if not tip:
+            if self.status != self.StatusType.ACTIVE.value:
+                self.status = self.StatusType.ACTIVE.value
+                self.save(update_fields=['status'])
+
+        return self.status
+
 
 class TechnicalIssuePeriod(models.Model):
     service = models.ForeignKey(Services, on_delete=models.CASCADE)
-    duration = models.DurationField()
+    duration = models.PositiveIntegerField(help_text='Duration in minutes')
     start_timestamp = models.DateTimeField(default=timezone.now)
     end_timestamp = models.DateTimeField()
 
     def save(self, *args, **kwargs):
-        self.end_timestamp = self.start_timestamp + self.duration
+        self.end_timestamp = self.start_timestamp + timezone.timedelta(minutes=self.duration)
         super().save(*args, **kwargs)
-
-    def is_active(self):
-        now = timezone.now()
-        status = self.start_timestamp <= now <= self.end_timestamp
-        return status
-
-
-from django import forms
-
-from django.utils import timezone
 
 
 class TechnicalIssuePeriodForm(forms.ModelForm):
@@ -72,9 +80,7 @@ class TechnicalIssuePeriodForm(forms.ModelForm):
         cleaned_data = super().clean()
         start_timestamp = cleaned_data.get('start_timestamp')
         duration = cleaned_data.get('duration')
-        print(type(duration))
         if start_timestamp and duration:
-            # duration_minutes = int(duration)  # Ensure duration is an integer
-            cleaned_data['end_timestamp'] = start_timestamp + duration
+            cleaned_data['end_timestamp'] = start_timestamp + timezone.timedelta(minutes=duration)
 
         return cleaned_data
