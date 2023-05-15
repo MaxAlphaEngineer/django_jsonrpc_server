@@ -20,12 +20,12 @@ import json
 
 from django.http import JsonResponse
 
-from v1.models import Error
+from v1.models import Errors
 
 
 def error_message(code, message=None, origin="", request_id=None, wrapper=False, rpc=False, json_response=False,
                   rpc_error=False):
-    error = Error.objects.filter(code=code)
+    error = Errors.objects.filter(code=code)
     if error.exists():
         error = error.first()
         message = {

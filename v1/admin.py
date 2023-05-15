@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from v1.models import Services, Error
+from v1.models import Services, Errors
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
 from v1.models.users import Partner
 
@@ -54,6 +54,6 @@ class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
 admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
 
 
-@admin.register(Error)
+@admin.register(Errors)
 class ErrorAdminModel(admin.ModelAdmin):
-    list_display = [field.name for field in Error._meta.fields]
+    list_display = [field.name for field in Errors._meta.fields]

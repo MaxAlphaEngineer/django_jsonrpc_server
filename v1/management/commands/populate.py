@@ -35,7 +35,7 @@
 from django.core.management import BaseCommand
 
 from v1.models import Partner
-from v1.models.errors import Error
+from v1.models.errors import Errors
 
 ALLOWED_METHODS = [
     'errors',
@@ -78,10 +78,10 @@ def users():
 def errors():
     for error in rpc_errors:
         # if error code exists do nothing
-        rpc_error = Error.objects.filter(code=error['code'])
+        rpc_error = Errors.objects.filter(code=error['code'])
 
         if not rpc_error.exists():
-            Error(code=error['code'], origin=error['origin'], uz=error['uz'], ru=error['ru'], en=error['en']).save()
+            Errors(code=error['code'], origin=error['origin'], uz=error['uz'], ru=error['ru'], en=error['en']).save()
             print(f'Created: {error["code"]}')
 
     print('\nError codes populated successfully!\n')
