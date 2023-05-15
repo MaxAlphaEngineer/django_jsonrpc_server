@@ -17,3 +17,6 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
 # TODO: Implement Telegram notify
+# register chat id
+
+# send message
