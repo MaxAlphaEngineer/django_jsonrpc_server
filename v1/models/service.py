@@ -22,11 +22,13 @@ from django.utils import timezone
 
 
 class Services(models.Model):
+    # Status Types of Services
     class StatusType(models.Choices):
         ACTIVE = 0
         TEMPORARILY = 1
         DEPRECATED = 2
 
+    # Logging Types of Services
     class LoggingType(models.Choices):
         OFF = 0
         USER_BASED = 1
@@ -44,19 +46,25 @@ class Services(models.Model):
         return f'Service: {self.method_name} -> status: {self.StatusType.choices[self.status][1]}'
 
     def is_active(self):
-        now = timezone.now()
+        # If status already active just return don't check other factors
+        if self.status != Services.StatusType.ACTIVE:
+            now = timezone.now()
 
-        tip = TechnicalIssuePeriod.objects.filter(
-            service_id=self.id,
-            start_timestamp__lte=now,
-            end_timestamp__gte=now
-        ).exists()
+            # Check TIP is available in current timestamp
+            tip = TechnicalIssuePeriod.objects.filter(
+                service_id=self.id,
+                start_timestamp__lte=now,
+                end_timestamp__gte=now
+            ).exists()
 
-        if not tip:
-            if self.status != self.StatusType.ACTIVE.value:
-                self.status = self.StatusType.ACTIVE.value
-                self.save(update_fields=['status'])
+            # If TIP is not exists
+            if not tip:
+                # Check if status is same as exists
+                if self.status != self.StatusType.ACTIVE.value:
+                    self.status = self.StatusType.ACTIVE.value
+                    self.save(update_fields=['status'])
 
+        # Return status
         return self.status
 
 
@@ -66,11 +74,15 @@ class TechnicalIssuePeriod(models.Model):
     start_timestamp = models.DateTimeField(default=timezone.now)
     end_timestamp = models.DateTimeField()
 
+    class Meta:
+        verbose_name_plural = "Technical Issue Periods"
+
     def save(self, *args, **kwargs):
         self.end_timestamp = self.start_timestamp + timezone.timedelta(minutes=self.duration)
         super().save(*args, **kwargs)
 
 
+# TechnicalIssuePeriod Form which excludes end_timestamp and calculates automatically
 class TechnicalIssuePeriodForm(forms.ModelForm):
     class Meta:
         model = TechnicalIssuePeriod

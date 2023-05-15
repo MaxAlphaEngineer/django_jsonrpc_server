@@ -19,7 +19,7 @@
 from django.db import models
 
 
-class Error(models.Model):
+class Errors(models.Model):
     code = models.IntegerField(unique=True)
     origin = models.CharField(max_length=120, default=None)
     en = models.CharField(max_length=255, default=None)
@@ -30,5 +30,11 @@ class Error(models.Model):
         return f'JsonRpcError {self.code}: {self.en}'
 
     class Meta:
-        verbose_name = 'JSON-RPC Error Code'
-        verbose_name_plural = 'JSON-RPC Error Codes'
+        verbose_name = 'Error Message'
+        verbose_name_plural = 'Error Messages'
+
+
+class CustomException(models.Model):
+    error_message = models.CharField(max_length=255)
+    stack_trace = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
