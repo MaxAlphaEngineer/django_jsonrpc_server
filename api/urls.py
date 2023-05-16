@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from v1.utils import notify
 from v1.utils.actuator import Actuator
 
 actuator = Actuator()
@@ -25,4 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('v1.urls')),
     path('', actuator.get_health),
+    path('tg', notify.get_updates),
 ]

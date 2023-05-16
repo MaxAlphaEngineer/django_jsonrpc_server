@@ -96,3 +96,16 @@ class TechnicalIssuePeriodForm(forms.ModelForm):
             cleaned_data['end_timestamp'] = start_timestamp + timezone.timedelta(minutes=duration)
 
         return cleaned_data
+
+
+class TelegramChat(models.Model):
+    chat_id = models.IntegerField(unique=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    username = models.CharField(max_length=50, null=True, blank=True)
+    status = models.BooleanField('Send notify status', default=True)
+    active = models.BooleanField('Chat is active in TG', default=True)
+    chat_type = models.CharField(max_length=20)
+    everybody_admin = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Chat: {self.name}, Type: {self.chat_type}"

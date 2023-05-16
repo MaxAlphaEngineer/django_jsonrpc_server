@@ -24,6 +24,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from v1.models import TelegramChat
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, password, **extra_fields):
@@ -52,7 +54,12 @@ class Partner(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     identity = models.CharField(max_length=3, default='TT')
-    chat_id = models.CharField('Telegram chat id', max_length=20, default='')
+    chats = models.ManyToManyField(
+        TelegramChat,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []

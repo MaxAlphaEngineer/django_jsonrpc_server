@@ -4,18 +4,18 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from v1.models import Services, Errors
-from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
+from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TelegramChat
 from v1.models.users import Partner
 
 
 @admin.register(Partner)
 class PartnerAdmin(UserAdmin):
-    list_display = 'id', 'username', 'identity', 'chat_id', 'is_active', 'is_test', 'is_superuser', 'is_staff'
+    list_display = 'id', 'username', 'identity', 'is_active', 'is_test', 'is_superuser', 'is_staff'
     list_display_links = 'id', 'username'
-    list_editable = ['identity', 'is_active', 'chat_id']
+    list_editable = ['identity', 'is_active']
     fieldsets = (
         ("Partner Credentials",
-         {"fields": ("username", "password", "identity", 'chat_id')}),
+         {"fields": ("username", "password", "identity", 'chats')}),
         (_("Permissions"),
          {"fields": ("is_active", "is_test", "is_staff", "is_superuser", "groups", "user_permissions")})
     )
@@ -57,3 +57,8 @@ admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
 @admin.register(Errors)
 class ErrorAdminModel(admin.ModelAdmin):
     list_display = [field.name for field in Errors._meta.fields]
+
+
+@admin.register(TelegramChat)
+class TelegramChatAdminModel(admin.ModelAdmin):
+    list_display = [field.name for field in TelegramChat._meta.fields]
