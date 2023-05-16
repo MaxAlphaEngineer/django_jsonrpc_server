@@ -4,8 +4,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from v1.models import Services, Errors
-from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TelegramChat
+from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
 from v1.models.users import Partner
+from .models import TelegramChat
+from .utils.notify import get_updates
 
 
 @admin.register(Partner)
@@ -59,6 +61,18 @@ class ErrorAdminModel(admin.ModelAdmin):
     list_display = [field.name for field in Errors._meta.fields]
 
 
-@admin.register(TelegramChat)
-class TelegramChatAdminModel(admin.ModelAdmin):
+class TelegramChatAdmin(admin.ModelAdmin):
     list_display = [field.name for field in TelegramChat._meta.fields]
+    search_fields = ('name', 'username')
+    actions = ['get_updates_action']
+
+    def get_updates_action(self, request, queryset):
+        # Perform the get_updates() action here
+        get_updates(request)
+        for chat in queryset:
+            pass
+
+    get_updates_action.short_description = "Get Updates"
+
+
+admin.site.register(TelegramChat, TelegramChatAdmin)
