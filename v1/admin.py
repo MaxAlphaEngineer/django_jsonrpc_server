@@ -7,7 +7,7 @@ from v1.models import Services, Errors
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
 from v1.models.users import Partner
 from .models import TelegramChat
-from .utils.notify import get_updates
+from .utils.notify import get_updates, notify_all
 
 
 @admin.register(Partner)
@@ -51,6 +51,13 @@ class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
         service = obj.service
         service.status = Services.StatusType.TEMPORARILY.value
         service.save()
+
+        # TODO: Later make more reliable notify method
+        msg = f'🚨🚨 {service} 🚨🚨\n' \
+              f'🕧 For {duration} minutes\n' \
+              f'Start time: <pre>{obj.start_timestamp}</pre>\n' \
+              f'End time: <pre>{obj.end_timestamp}</pre>'
+        notify_all(msg=msg)
 
 
 admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
