@@ -32,6 +32,8 @@ def login(username, password, refresh=False) -> Result:
 
 @method
 def register() -> Result:
+
+
     return Success("pong")
 
 
