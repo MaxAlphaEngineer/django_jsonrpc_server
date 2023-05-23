@@ -56,7 +56,6 @@ class Partner(AbstractBaseUser, PermissionsMixin):
     identity = models.CharField(max_length=3, default='TT')
     chats = models.ManyToManyField(
         TelegramChat,
-        null=True,
         blank=True,
         related_name='users'
     )

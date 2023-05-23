@@ -16,35 +16,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
-from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, Result, Success, dispatch
-
-from v1.modules import authorization
-from v1.utils.decorators import requires_json
-from v1.utils.helper import json_response
+from settings import BASE_DIR, config
 
 
-@method(name="login")
-def login(username, password, refresh=False) -> Result:
-    response = authorization.login(username=username, password=password, refresh=refresh)
-    return Success(response)
+SECRET_KEY = config.get('Credentials', 'SECRET_KEY_LOCAL')
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
-@method
-def register() -> Result:
-    return Success("pong")
-
-
-@method
-def create() -> Result:
-    return Success("Create")
-
-
-@csrf_exempt
-@requires_json
-def jsonrpc(request):
-    response = dispatch(request.data)
-
-    print(request.service)
-
-    return json_response(response)
+ALLOWED_HOSTS = ['127.0.0.1']

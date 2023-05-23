@@ -26,5 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('v1.urls')),
     path('', actuator.get_health),
-    path('/get-updates/', get_updates, name='get_updates'),
+    path('get-updates/', get_updates, name='get_updates'),
 ]
