@@ -40,7 +40,7 @@ class Services(models.Model):
     is_test = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name_plural = "Services"
+        verbose_name_plural = "🎛 Services"
 
     def __str__(self):
         return f'Service: {self.method_name} -> status: {self.StatusType.choices[self.status][1]}'
@@ -75,7 +75,7 @@ class TechnicalIssuePeriod(models.Model):
     end_timestamp = models.DateTimeField()
 
     class Meta:
-        verbose_name_plural = "Technical Issue Periods"
+        verbose_name_plural = "🔴 Technical Issue Periods"
 
     def save(self, *args, **kwargs):
         self.end_timestamp = self.start_timestamp + timezone.timedelta(minutes=self.duration)
@@ -109,3 +109,7 @@ class TelegramChat(models.Model):
 
     def __str__(self):
         return f"Chat: {self.name}, Type: {self.chat_type}"
+
+    class Meta:
+        verbose_name_plural = "📨 Telegram chats"
+

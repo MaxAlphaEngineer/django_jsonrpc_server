@@ -31,7 +31,7 @@ class Errors(models.Model):
 
     class Meta:
         verbose_name = 'Error Message'
-        verbose_name_plural = 'Error Messages'
+        verbose_name_plural = '❌ Error Messages'
 
 
 class CustomException(models.Model):
