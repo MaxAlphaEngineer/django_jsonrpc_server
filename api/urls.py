@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from v1.utils.actuator import Actuator
+from v1.utils.notify import get_updates
 
 actuator = Actuator()
 
@@ -25,4 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('v1.urls')),
     path('', actuator.get_health),
+    path('/get-updates/', get_updates, name='get_updates'),
 ]

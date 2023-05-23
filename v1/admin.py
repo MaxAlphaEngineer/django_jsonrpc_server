@@ -7,7 +7,7 @@ from v1.models import Services, Errors
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
 from v1.models.users import Partner
 from .models import TelegramChat
-from .utils.notify import get_updates, notify_all
+from .utils.notify import notify
 
 
 @admin.register(Partner)
@@ -57,7 +57,7 @@ class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
               f'🕧 For {duration} minutes\n' \
               f'Start time: <pre>{obj.start_timestamp}</pre>\n' \
               f'End time: <pre>{obj.end_timestamp}</pre>'
-        notify_all(msg=msg)
+        notify(msg=msg, mode='all')
 
 
 admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
@@ -73,13 +73,7 @@ class TelegramChatAdmin(admin.ModelAdmin):
     search_fields = ('name', 'username')
     actions = ['get_updates_action']
 
-    def get_updates_action(self, request, queryset):
-        # Perform the get_updates() action here
-        get_updates(request)
-        for chat in queryset:
-            pass
-
-    get_updates_action.short_description = "Get Updates"
+    change_list_template = 'telegram_get_updates_change_list.html'
 
 
 admin.site.register(TelegramChat, TelegramChatAdmin)

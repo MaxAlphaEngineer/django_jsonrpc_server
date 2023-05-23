@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  <li>
+    <a href="{% url 'get_updates' %}" class="btn btn-primary" role="button">
+      Get Updates
+    </a>
+  </li>
+{% endblock %}

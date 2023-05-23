@@ -63,13 +63,13 @@ def users():
     test = 'test'
     password = 'password'
     if not Partner.objects.filter(username=admin).exists():
-        Partner.objects.create_superuser(username=admin, password=password, is_active=True, chat_id='-')
+        Partner.objects.create_superuser(username=admin, password=password, is_active=True)
         print("Superuser created successfully!")
     else:
         print("Superuser already exists!")
 
     if not Partner.objects.filter(username=test).exists():
-        Partner.objects.create_user(username=test, password=password, is_active=True, chat_id='-')
+        Partner.objects.create_user(username=test, password=password, is_active=True)
         print("Test user created successfully!")
     else:
         print("Test user already exists!")

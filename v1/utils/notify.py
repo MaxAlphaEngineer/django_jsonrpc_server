@@ -17,7 +17,7 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
-from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from v1.models import TelegramChat
@@ -36,7 +36,6 @@ def get_updates(request):
         unique_ids = set()
 
         for chats in response['result']:
-            print(chats)
             if 'message' in chats:
                 chat_data = chats['message']['chat']
             elif 'my_chat_member' in chats:
@@ -52,30 +51,20 @@ def get_updates(request):
                 filtered_chat_data.append(chat_data)
 
         # Set offset for future updates
-        update_id = response['result'][-1]['update_id']
-        requests.get(f'https://api.telegram.org/bot{access_token}/getUpdates?offset={update_id}').json()
+        if len(response['result']) > 0:
+            update_id = response['result'][-1]['update_id']
+            requests.get(f'https://api.telegram.org/bot{access_token}/getUpdates?offset={update_id}').json()
 
     for chat_data in filtered_chat_data:
-        print(chat_data)
         chat_id = chat_data.get('id')
         existing_chat = TelegramChat.objects.filter(chat_id=chat_id).first()
         if not existing_chat:
-            title = chat_data.get('title')
-            first_name = chat_data.get('first_name')
-            last_name = chat_data.get('last_name')
+            title = chat_data.get('title', '')
+            first_name = chat_data.get('first_name', '')
+            last_name = chat_data.get('last_name', '')
 
-            if title and first_name and last_name:
-                name = title + ' ' + first_name + ' ' + last_name
-            elif title and first_name:
-                name = title + ' ' + first_name
-            elif first_name and last_name:
-                name = first_name + ' ' + last_name
-            elif title:
-                name = title
-            elif first_name:
-                name = first_name
-            else:
-                name = 'Unknown'
+            name_parts = [part.strip() for part in [title, first_name, last_name] if part.strip()]
+            name = ' '.join(name_parts) if name_parts else 'Unknown'
 
             TelegramChat.objects.create(
                 chat_id=chat_id,
@@ -86,22 +75,24 @@ def get_updates(request):
             )
             notify(f"Registered successfully: {name}", chat_id)
 
-    return JsonResponse(filtered_chat_data, safe=False)
+    return redirect(request.META.get('HTTP_REFERER'))
+    # return JsonResponse(filtered_chat_data, safe=False)
 
 
-def notify(msg, chat_id='', parse_mode='html'):
-    params = f'/sendMessage?chat_id={chat_id}&parse_mode={parse_mode}&text={msg}'
+def notify(msg, chat_id='', mode='single', parse_mode='html'):
+    if mode == 'all':
+        ids = TelegramChat.objects.filter(status=True, active=True)
+        for id in ids:
+            params = f'/sendMessage?chat_id={id.chat_id}&parse_mode={parse_mode}&text={msg}'
+            fire(params)
+    elif mode == 'single':
+        params = f'/sendMessage?chat_id={chat_id}&parse_mode={parse_mode}&text={msg}'
+        fire(params)
+    pass
 
-    return tg_fire(params)
 
-
-def notify_all(msg):
-    ids = TelegramChat.objects.filter(status=True, active=True)
-    for id in ids:
-        notify(msg, id.chat_id)
-
-
-def tg_fire(params):
+# Send notification using telegram
+def fire(params):
     url = f'https://api.telegram.org/bot{access_token}{params}'
 
     try:
