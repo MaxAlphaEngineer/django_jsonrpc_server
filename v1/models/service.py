@@ -72,6 +72,9 @@ class TechnicalIssuePeriod(models.Model):
     service = models.ForeignKey(Services, on_delete=models.CASCADE)
     duration = models.PositiveIntegerField(help_text='Duration in minutes')
     start_timestamp = models.DateTimeField(default=timezone.now)
+    notify = models.BooleanField(default=False)
+    template = models.ForeignKey('TechnicalIssuePeriodTemplate', on_delete=models.SET_NULL, null=True, blank=True,
+                                 default=None)
     end_timestamp = models.DateTimeField()
 
     class Meta:
@@ -80,6 +83,22 @@ class TechnicalIssuePeriod(models.Model):
     def save(self, *args, **kwargs):
         self.end_timestamp = self.start_timestamp + timezone.timedelta(minutes=self.duration)
         super().save(*args, **kwargs)
+
+
+class TechnicalIssuePeriodTemplate(models.Model):
+    title = models.CharField("Title", max_length=255, null=True)
+
+    uz = models.TextField("O'zbekcha", null=True)
+    ru = models.TextField("Русский", null=True)
+    en = models.TextField("English", null=True)
+
+    tag = models.CharField("Tags", max_length=255, null=True)
+
+    class Meta:
+        verbose_name_plural = "📑 TIP Message Templates"
+
+    def __str__(self):
+        return f'Title: {self.title} -> uz: {self.uz[:50]}...'
 
 
 # TechnicalIssuePeriod Form which excludes end_timestamp and calculates automatically
@@ -112,4 +131,3 @@ class TelegramChat(models.Model):
 
     class Meta:
         verbose_name_plural = "📨 Telegram chats"
-

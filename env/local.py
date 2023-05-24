@@ -16,8 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
-from settings import BASE_DIR, config
-
+from env.base import BASE_DIR, config
 
 SECRET_KEY = config.get('Credentials', 'SECRET_KEY_LOCAL')
 

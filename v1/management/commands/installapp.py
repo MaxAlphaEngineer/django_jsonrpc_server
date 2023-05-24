@@ -52,14 +52,17 @@ class Command(BaseCommand):
 
         # app_name = 'v1'
         self.stdout.write(self.style.SUCCESS(f'\nStarted make migrations: {app_name}\n'))
-        call_command('makemigrations', app_name, verbosity=2)
+        call_command('makemigrations', app_name)  # , verbosity=2
 
         # Perform database migrations
         self.stdout.write(self.style.SUCCESS(f'\nStarted migration!\n'))
-        call_command('migrate', app_name, verbosity=2)
+        call_command('migrate', app_name)  # , verbosity=2
 
         # Populate error codes
         call_command('populate', 'errors')
 
         # TODO: Implement create test superuser
         call_command('populate', 'users')
+
+        # Populate TIP Templates
+        call_command('populate', 'tip_templates')

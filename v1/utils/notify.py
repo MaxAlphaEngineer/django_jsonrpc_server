@@ -20,8 +20,10 @@ import requests
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 
-from settings import config
+from django.conf import settings
 from v1.models import TelegramChat
+
+config = settings.PROJECT_CONFIG
 
 access_token = config.get('Credentials', 'BOT_TOKEN')
 

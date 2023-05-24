@@ -15,7 +15,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from settings import BASE_DIR
+import configparser
+from pathlib import Path
+
+# config.ini call for project wide usage
+config = configparser.ConfigParser()
+config.read('env/config.ini')
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 NO_LOGIN_METHODS = ['login']
 

@@ -1,10 +1,12 @@
+import urllib.parse
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from v1.models import Services, Errors
-from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm
+from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TechnicalIssuePeriodTemplate
 from v1.models.users import Partner
 from .models import TelegramChat
 from .utils.notify import notify
@@ -31,7 +33,7 @@ class ServicesAdminModel(admin.ModelAdmin):
 class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
     form = TechnicalIssuePeriodForm
     list_display = ['service', 'duration', 'start_timestamp', 'end_timestamp']
-    fields = ['service', 'duration', 'start_timestamp']
+    fields = ['service', 'duration', 'template', 'notify', 'start_timestamp']
 
     def save_model(self, request, obj, form, change):
         # Get start time
@@ -51,16 +53,50 @@ class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
         service = obj.service
         service.status = Services.StatusType.TEMPORARILY.value
         service.save()
+        if obj.notify:
+            if obj.template is not None:
 
-        # TODO: Later make more reliable notify method
-        msg = f'🚨🚨 {service} 🚨🚨\n' \
-              f'🕧 For {duration} minutes\n' \
-              f'Start time: <pre>{obj.start_timestamp}</pre>\n' \
-              f'End time: <pre>{obj.end_timestamp}</pre>'
-        notify(msg=msg, mode='all')
+                date = obj.start_timestamp.strftime('%Y-%m-%d')
+                start_time = obj.start_timestamp.strftime('%H:%M')
+                end_time = obj.end_timestamp.strftime('%H:%M')
+
+                tag = urllib.parse.quote(obj.template.tag)
+                msg = f'<b>{obj.template.title}</b>\n' \
+                      f'<pre>-------------------------</pre>\n' \
+                      f'🇺🇿 {obj.template.uz}\n' \
+                      f'<pre>* * *</pre>\n' \
+                      f'🇷🇺 {obj.template.ru}\n' \
+                      f'<pre>* * *</pre>\n' \
+                      f'🇬🇧 {obj.template.en}\n' \
+                      f'<pre>-------------------------</pre>' \
+                      f'<pre>{tag}</pre>'
+
+                replacements = {
+                    'duration': f'<b>{duration}</b>',
+                    'service_name': f'<b>{service.method_name}</b>',
+                    'date': f'<b>{date}</b>',
+                    'start_time': f'<b>{start_time}</b>',
+                    'end_time': f'<b>{end_time}</b>',
+                }
+
+                for key, value in replacements.items():
+                    msg = msg.replace(key, value)
+            else:
+                # TODO: Later make more reliable notify method
+                msg = f'🚨🚨 {service} 🚨🚨\n' \
+                      f'🕧 For {duration} minutes\n' \
+                      f'Start time: <pre>{obj.start_timestamp}</pre>\n' \
+                      f'End time: <pre>{obj.end_timestamp}</pre>'
+
+            notify(msg=msg, mode='all')
 
 
 admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
+
+
+@admin.register(TechnicalIssuePeriodTemplate)
+class TechnicalIssuePeriodTemplateAdminModel(admin.ModelAdmin):
+    list_display = [field.name for field in TechnicalIssuePeriodTemplate._meta.fields]
 
 
 @admin.register(Errors)

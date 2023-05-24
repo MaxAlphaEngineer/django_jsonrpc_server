@@ -34,12 +34,13 @@
 
 from django.core.management import BaseCommand
 
-from v1.models import Partner
+from v1.models import Partner, TechnicalIssuePeriodTemplate
 from v1.models.errors import Errors
 
 ALLOWED_METHODS = [
     'errors',
-    'users'
+    'users',
+    'tip_templates'
 ]
 
 
@@ -87,6 +88,29 @@ def errors():
     print('\nError codes populated successfully!\n')
 
 
+def tip_templates():
+    for template in tip_temps:
+        # if error code exists do nothing
+        tip_temp = TechnicalIssuePeriodTemplate.objects.filter(title=template['title'], uz=template['uz'],
+                                                               ru=template['ru'])
+
+        if not tip_temp.exists():
+            TechnicalIssuePeriodTemplate(title=template['title'], uz=template['uz'],
+                                         ru=template['ru'], en=template['en'], tag=template['tag']).save()
+            print(f'Created: {template["title"]}')
+
+    print('\nTemplates  populated successfully!\n')
+
+
+tip_temps = [
+    {
+        "title": "❗️❗️❗️",
+        "uz": "Hurmatli hamkasblar, sizlarga  date kuni Toshkent vaqti bo'yicha start_time va end_time oralig'ida amalga oshiriladigan  texnik ishlar haqida ogohlantirmoqchimiz! \nServislar: service_name  ushbu davrda mavjud bo'lmaydi!\nNoqulaylik uchun uzr so'raymiz.",
+        "ru": "Уважаемые коллеги, сообщаем Вам о технических работах на шлюзе, которые date с start_time до end_time по ташкентскому времени!\nУслуги: service_name  в этот период будет недоступен!\nПриносим извинения за неудобства.",
+        "en": "Dear colleagues, we would like to inform you about the scheduled maintenance on the gateway, which will take place date  from start_time to end_time according to Tashkent time!\nService: service_name  will be unavailable during this period!\nWe apologize for the inconvenience.",
+        "tag": "#issue #pc"
+    }
+]
 rpc_errors = [
     # Validators
     {
