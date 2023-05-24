@@ -40,6 +40,11 @@ def create() -> Result:
     return Success("Create")
 
 
+@method
+def update() -> Result:
+    return Success("Update")
+
+
 @csrf_exempt
 @requires_json
 def jsonrpc(request):

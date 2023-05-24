@@ -29,44 +29,40 @@ as well as any configuration steps that need to be taken.
 git clone https://github.com/MaxAlphaEngineer/django_jsonrpc_server.git
 ```
 
-2. Activate Virtual Environment
-
-```commandline
-venv\Scripts\activate
-```
-
-3. Install requirements.txt
+2. Install requirements.txt
 
 ```commandline
 pip install -r requirements.txt
 ```
 
-5. Make Migrations
+3. Activate Virtual Environment
+
+```commandline
+venv\Scripts\activate
+```
+
+4. Make Migrations
 
 ```commandline
 python manage.py makemigrations v1
 python manage.py migrate
 ```
 
-6. Migrate Error codes
+5. Populate Error codes, Users and Technical Issue Templates
 
 ```commandline
 python manage.py populate errors
+python manage.py populate users
+python manage.py populate tip_templates
 ```
 
-7. Create Super User
-
-```
-python manage.py createsuperuser
-``` 
-
-#### 8. Alternatively you can use custom command from 2~7 steps using
+6. Alternatively you can use custom command from 2~7 steps using
 
 ```commandline
 python manage.py installapp 
 ```
 
-8. Test using API call
+7. Test using API call
 
 POST http://127.0.0.1:8000/api/v1/jsonrpc
 
@@ -76,13 +72,13 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
   "id": 123,
   "method": "login",
   "params": {
-    "username": "Admin",
-    "password": "Password"
+    "username": "admin",
+    "password": "password"
   }
 }
 ```
 
-9. Admin Dashboard
+8. Admin Dashboard
    Open in browser http://127.0.0.1:8000/admin
 
 ---
@@ -91,24 +87,20 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
 
 List any external dependencies that are required to use in project listed in [requirements.txt](requirements.txt) file
 
-Such as: 
+Such as:
 
       asgiref==3.6.0
       attrs==23.1.0
       Django==4.2.1
       jsonrpcserver==5.0.9
-      jsonschema==4.17.3
-      OSlash==0.6.3
-      pyrsistent==0.19.3
-      sqlparse==0.4.4
-      typing_extensions==4.5.0
-      tzdata==2023.3
+      * * *
+
 ---
 
 # Configuration
 
-If there are any configuration steps that need to be taken after the project is installed, list them here. For example,
-if your project requires a specific database configuration, you can include instructions for how to set that up.
+Log 
+Telegram bot 
 
 ---
 
