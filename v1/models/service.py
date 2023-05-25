@@ -87,11 +87,9 @@ class TechnicalIssuePeriod(models.Model):
 
 class TechnicalIssuePeriodTemplate(models.Model):
     title = models.CharField("Title", max_length=255, null=True)
-
     uz = models.TextField("O'zbekcha", null=True)
     ru = models.TextField("Русский", null=True)
     en = models.TextField("English", null=True)
-
     tag = models.CharField("Tags", max_length=255, null=True)
 
     class Meta:

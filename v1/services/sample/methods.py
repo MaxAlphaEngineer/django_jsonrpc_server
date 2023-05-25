@@ -15,21 +15,16 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from env.base import config
+from v1.services.sample.dragon import fire
 
-#
-SECRET_KEY = config.get('Credentials', 'SECRET_KEY_PRODUCTION')
 
-#
-DATABASES = {
-    'default': {
-        'ENGINE': f"django.db.backends.{config.get('Database', 'ENGINE')}",
-        'NAME': config.get('Database', 'NAME'),
-        'USER': config.get('Database', 'USER'),
-        'PASSWORD': config.get('Database', 'PASSWORD'),
-        'HOST': config.get('Database', 'HOST'),
-        'PORT': config.get('Database', 'PORT'),
-    }
-}
+# Any 3rd Party API methods
+def get_rates():
+    # Provide the necessary data for method
+    data = {}
 
-ALLOWED_HOSTS = []
+    # Call the fire() function from the dragon module of service
+    response = fire(data)
+
+    # return response for further process
+    return response

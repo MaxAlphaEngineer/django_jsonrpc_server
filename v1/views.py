@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, Result, Success, dispatch
 
 from v1.modules import authorization
+from v1.services.sample import methods
 from v1.utils.decorators import requires_json
 from v1.utils.helper import json_response
 
@@ -45,11 +46,15 @@ def update() -> Result:
     return Success("Update")
 
 
+@method(name="cbu.rates")
+def btc_price() -> Result:
+    response = methods.get_rates()
+    return Success(response)
+
+
 @csrf_exempt
 @requires_json
 def jsonrpc(request):
     response = dispatch(request.data)
-
-    print(request.service)
 
     return json_response(response)

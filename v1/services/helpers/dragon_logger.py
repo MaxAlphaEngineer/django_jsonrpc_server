@@ -15,21 +15,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from env.base import config
-
-#
-SECRET_KEY = config.get('Credentials', 'SECRET_KEY_PRODUCTION')
-
-#
-DATABASES = {
-    'default': {
-        'ENGINE': f"django.db.backends.{config.get('Database', 'ENGINE')}",
-        'NAME': config.get('Database', 'NAME'),
-        'USER': config.get('Database', 'USER'),
-        'PASSWORD': config.get('Database', 'PASSWORD'),
-        'HOST': config.get('Database', 'HOST'),
-        'PORT': config.get('Database', 'PORT'),
-    }
-}
-
-ALLOWED_HOSTS = []
