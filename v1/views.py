@@ -46,6 +46,11 @@ def update() -> Result:
     return Success("Update")
 
 
+@method
+def delete() -> Result:
+    return Success("Update")
+
+
 @method(name="cbu.rates")
 def btc_price() -> Result:
     response = methods.get_rates()

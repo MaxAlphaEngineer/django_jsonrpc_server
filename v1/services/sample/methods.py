@@ -19,6 +19,7 @@ from v1.services.sample.dragon import fire
 
 
 # Any 3rd Party API methods
+
 def get_rates():
     # Provide the necessary data for method
     data = {}

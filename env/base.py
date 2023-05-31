@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'v1.utils.logger.APILoggerMiddleware',
+    'v1.middlewares.ip_range_middleware.IPRangeMiddleware'
 ]
 
 ROOT_URLCONF = 'api.urls'

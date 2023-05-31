@@ -15,7 +15,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from v1.models.allowed_ips import AllowedIP
-from v1.models.errors import Errors
-from v1.models.service import Services, TechnicalIssuePeriod, TechnicalIssuePeriodTemplate, TelegramChat
-from v1.models.users import Partner
+from django.db import models
+
+
+class AllowedIP(models.Model):
+    ip_address = models.CharField(max_length=45)
+    ip_range = models.CharField(max_length=18, blank=True, null=True)
+    route = models.CharField(max_length=100)
+    is_allowed = models.BooleanField(default=False)
+    starts_with = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.route} - {self.ip_address}"

@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from v1.models import Services, Errors
+from v1.models import Services, Errors, AllowedIP
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TechnicalIssuePeriodTemplate
 from v1.models.users import Partner
 from .models import TelegramChat
@@ -96,11 +96,13 @@ admin.site.register(TechnicalIssuePeriod, TechnicalIssuePeriodAdmin)
 
 @admin.register(TechnicalIssuePeriodTemplate)
 class TechnicalIssuePeriodTemplateAdminModel(admin.ModelAdmin):
+    # Display all related columns in case of TIP
     list_display = [field.name for field in TechnicalIssuePeriodTemplate._meta.fields]
 
 
 @admin.register(Errors)
 class ErrorAdminModel(admin.ModelAdmin):
+    # Error messages DB
     list_display = [field.name for field in Errors._meta.fields]
 
 
@@ -113,3 +115,9 @@ class TelegramChatAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TelegramChat, TelegramChatAdmin)
+
+
+@admin.register(AllowedIP)
+class AllowedIPAdminModel(admin.ModelAdmin):
+    # Error messages DB
+    list_display = [field.name for field in AllowedIP._meta.fields]

@@ -15,7 +15,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from v1.models.allowed_ips import AllowedIP
-from v1.models.errors import Errors
-from v1.models.service import Services, TechnicalIssuePeriod, TechnicalIssuePeriodTemplate, TelegramChat
-from v1.models.users import Partner
