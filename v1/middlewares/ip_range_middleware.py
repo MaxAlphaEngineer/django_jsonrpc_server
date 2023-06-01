@@ -17,23 +17,32 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 import ipaddress
 
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 
 from v1.models import AllowedIP
+from v1.utils.helper import error_message
 
 
 class IPRangeMiddleware:
+    # Constructor of middleware
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        # Get Client IP address
         user_ip = self.get_client_ip(request)
+
+        # Check whether ip is allowed or not
         if not self.is_ip_allowed(user_ip, request.path_info):
+            if request.content_type == 'application/json':
+                return JsonResponse(error_message(300, rpc=True))
             return HttpResponseForbidden("Access denied")
 
+        # Everything is ok return response
         response = self.get_response(request)
         return response
 
+    # Parse IP address from reqeust
     def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
@@ -42,17 +51,20 @@ class IPRangeMiddleware:
             ip = request.META.get('REMOTE_ADDR')
         return ip
 
+    # IP check using model:Allowed IP
     def is_ip_allowed(self, ip, path):
+        # Get from table all IP list
         allowed_ips = AllowedIP.objects.all()
-        print(ip, path)
 
+        # If any data not inserted return SUCCESS
         if allowed_ips.count() == 0:
             return True
 
+        # Filter to get all allowed IP list
         allowed_ips = allowed_ips.filter(is_allowed=True)
 
         for allowed_ip in allowed_ips:
-
+            # If starts with is ENABLED
             if allowed_ip.starts_with:
                 if not path.startswith(allowed_ip.route):
                     continue

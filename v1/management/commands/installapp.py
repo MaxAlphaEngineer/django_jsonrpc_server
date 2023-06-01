@@ -66,3 +66,6 @@ class Command(BaseCommand):
 
         # Populate TIP Templates
         call_command('populate', 'tip_templates')
+
+        # Populate Firewall Basics
+        call_command('populate', 'firewall')

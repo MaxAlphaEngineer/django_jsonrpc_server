@@ -35,12 +35,14 @@
 from django.core.management import BaseCommand
 
 from v1.models import Partner, TechnicalIssuePeriodTemplate
+from v1.models.allowed_ips import IP, AllowedIP
 from v1.models.errors import Errors
 
 ALLOWED_METHODS = [
     'errors',
     'users',
-    'tip_templates'
+    'tip_templates',
+    'firewall'
 ]
 
 
@@ -102,6 +104,35 @@ def tip_templates():
     print('\nTemplates  populated successfully!\n')
 
 
+def firewall():
+    for ip_address in ip_addresses:
+        # if error code exists do nothing
+        ip = IP.objects.filter(ip_address=ip_address['ip_address'], ip_range=ip_address['ip_range'])
+
+        if not ip.exists():
+            IP(description=ip_address['description'], ip_range=ip_address['ip_range'],
+               ip_address=ip_address['ip_address']).save()
+            print(f'Created: {ip_address["description"]}')
+
+    for allowed_ip in allowed_ips:
+        allowed = AllowedIP.objects.filter(route=allowed_ip['route'])
+        if not allowed.exists():
+
+            _all = AllowedIP(route=allowed_ip['route'],
+                             ip_check_allowed=allowed_ip['ip_check_allowed'],
+                             is_allowed=allowed_ip['is_allowed'],
+                             starts_with=allowed_ip['starts_with']
+                             )
+
+            _all.save()
+
+            if allowed_ip['ip_check_allowed']:
+                _all.ips.set(IP.objects.all())
+                _all.save()
+
+    print('\nIP Addresses populated successfully!\n')
+
+
 tip_temps = [
     {
         "title": "❗️❗️❗️",
@@ -111,8 +142,56 @@ tip_temps = [
         "tag": "#issue #pc"
     }
 ]
+
+ip_addresses = [
+    {
+        "description": "localhost - for test only",
+        "ip_address": "127.0.0.1",
+        "ip_range": None,
+    },
+
+    {
+        "description": "local range - for test only",
+        "ip_address": None,
+        "ip_range": "127.0.0.1/24",
+    }
+]
+
+allowed_ips = [
+    {
+        "route": "/",
+        "ip_check_allowed": False,
+        "is_allowed": True,
+        "starts_with": False,
+
+    },
+    {
+        "route": "/admin",
+        "ip_check_allowed": True,
+        "is_allowed": True,
+        "starts_with": True,
+
+    },
+
+    {
+        "route": "/api/v1/jsonrpc",
+        "ip_check_allowed": False,
+        "is_allowed": True,
+        "starts_with": False,
+
+    }
+]
+
 rpc_errors = [
     # Validators
+    {
+        "code": 300,
+        "origin": "access",
+        "uz": "Ushbu resursga kirish taqiqlangan!",
+        "ru": "Доступ к этому ресурсу запрещен!",
+        "en": "Access to this resource is denied!"
+    },
+
     {
         "code": 500,
         "origin": "service",
