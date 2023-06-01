@@ -9,6 +9,7 @@ from v1.models import Services, Errors, AllowedIP
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TechnicalIssuePeriodTemplate
 from v1.models.users import Partner
 from .models import TelegramChat
+from .models.allowed_ips import IP
 from .utils.notify import notify
 
 
@@ -121,3 +122,9 @@ admin.site.register(TelegramChat, TelegramChatAdmin)
 class AllowedIPAdminModel(admin.ModelAdmin):
     # Error messages DB
     list_display = [field.name for field in AllowedIP._meta.fields]
+
+
+@admin.register(IP)
+class IPAdminModel(admin.ModelAdmin):
+    # Error messages DB
+    list_display = [field.name for field in IP._meta.fields]

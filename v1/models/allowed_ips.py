@@ -20,8 +20,23 @@ from django.db import models
 
 class AllowedIP(models.Model):
     route = models.CharField(max_length=100)
+    ips = models.ManyToManyField('IP', related_name='allowed_ips', blank=True)
+    ip_check_allowed = models.BooleanField(default=False)
 
+    is_allowed = models.BooleanField(default=False)
+
+    starts_with = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.route} "
+
+
+class IP(models.Model):
+    description = models.CharField(max_length=100, blank=True, null=True)
     ip_address = models.CharField(max_length=45, blank=True, null=True)
+    ip_range = models.CharField(
+        help_text="IP range 192.168.202.0 to 192.168.202.255, you can use the CIDR notation 192.168.202.0/24",
+        max_length=18, blank=True, null=True)
 
     # IP range: 10.0.0.0 to 10.0.0.255
     # CIDR notation: 10.0.0.0/24
@@ -32,15 +47,6 @@ class AllowedIP(models.Model):
     # IP range: 192.168.1.0 to 192.168.1.15
     # CIDR notation: 192.168.1.0/28
     # IP range 192.168.202.0 to 192.168.202.255, you can use the CIDR notation 192.168.202.0/24
-    ip_range = models.CharField(
-        help_text="IP range 192.168.202.0 to 192.168.202.255, you can use the CIDR notation 192.168.202.0/24",
-        max_length=18, blank=True, null=True)
-
-    ip_check_allowed = models.BooleanField(default=False)
-
-    is_allowed = models.BooleanField(default=False)
-
-    starts_with = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.route} - {self.ip_address}"
+        return f"{self.description}  {self.ip_address} {self.ip_range}"

@@ -43,31 +43,47 @@ class IPRangeMiddleware:
         return ip
 
     def is_ip_allowed(self, ip, path):
-        allowed_ips = AllowedIP.objects.filter(is_allowed=True, route=path)
+        allowed_ips = AllowedIP.objects.all()
+        print(ip, path)
 
-        if not allowed_ips:
+        if allowed_ips.count() == 0:
             return True
 
+        allowed_ips = allowed_ips.filter(is_allowed=True)
+
         for allowed_ip in allowed_ips:
+
+            if allowed_ip.starts_with:
+                if not path.startswith(allowed_ip.route):
+                    continue
+            else:
+                if allowed_ip.route != path:
+                    continue
             if not allowed_ip.ip_check_allowed:
                 return True
-            if self.ip_matches_cidr(allowed_ip.ip_address, ip) or self.ip_matches_cidr(allowed_ip.ip_range, ip):
 
-                if not allowed_ip.starts_with:
-                    if self.path_matches(allowed_ip.route, path):
-                        return True
+            if allowed_ip.is_allowed:
+                ip_addresses = allowed_ip.ips.filter(ip_address=ip)
+                ip_ranges = allowed_ip.ips.filter(ip_range__isnull=False).exclude(ip_range='')
 
-                elif path.startswith(allowed_ip.route):
+                if allowed_ip.starts_with and path.startswith(allowed_ip.route):
                     return True
+
+                if ip_addresses.exists() or self.ip_matches_range(ip_ranges, ip):
+                    if not allowed_ip.starts_with:
+                        if self.path_matches(allowed_ip.route, path):
+                            return True
+                        else:
+                            return False
+                    if path.startswith(allowed_ip.route):
+                        return True
 
         return False
 
-    def ip_matches_cidr(self, allowed_cidr, user_ip):
-        if allowed_cidr:
-            try:
-                return ipaddress.ip_address(user_ip) in ipaddress.ip_network(allowed_cidr)
-            except ValueError:
-                return False
+    def ip_matches_range(self, ip_ranges, user_ip):
+        for ip_range in ip_ranges:
+            if ipaddress.ip_address(user_ip) in ipaddress.ip_network(ip_range.ip_range):
+                return True
         return False
 
     def path_matches(self, allowed_path, user_path):
