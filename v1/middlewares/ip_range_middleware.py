@@ -43,26 +43,31 @@ class IPRangeMiddleware:
         return ip
 
     def is_ip_allowed(self, ip, path):
-        allowed_ips = AllowedIP.objects.filter(is_allowed=True)
+        allowed_ips = AllowedIP.objects.filter(is_allowed=True, route=path)
+
+        if not allowed_ips:
+            return True
+
         for allowed_ip in allowed_ips:
-            if self.ip_matches(allowed_ip.ip_address, ip) or self.ip_matches_range(allowed_ip.ip_range, ip):
-                print(allowed_ip.route, path)
+            if not allowed_ip.ip_check_allowed:
+                return True
+            if self.ip_matches_cidr(allowed_ip.ip_address, ip) or self.ip_matches_cidr(allowed_ip.ip_range, ip):
+
                 if not allowed_ip.starts_with:
                     if self.path_matches(allowed_ip.route, path):
                         return True
-                    else:
-                        return False
-                if path.startswith(allowed_ip.route):
+
+                elif path.startswith(allowed_ip.route):
                     return True
 
         return False
 
-    def ip_matches(self, allowed_ip, user_ip):
-        return allowed_ip == user_ip
-
-    def ip_matches_range(self, allowed_range, user_ip):
-        if allowed_range:
-            return ipaddress.ip_address(user_ip) in ipaddress.ip_network(allowed_range)
+    def ip_matches_cidr(self, allowed_cidr, user_ip):
+        if allowed_cidr:
+            try:
+                return ipaddress.ip_address(user_ip) in ipaddress.ip_network(allowed_cidr)
+            except ValueError:
+                return False
         return False
 
     def path_matches(self, allowed_path, user_path):

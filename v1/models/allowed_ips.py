@@ -19,10 +19,27 @@ from django.db import models
 
 
 class AllowedIP(models.Model):
-    ip_address = models.CharField(max_length=45)
-    ip_range = models.CharField(max_length=18, blank=True, null=True)
     route = models.CharField(max_length=100)
+
+    ip_address = models.CharField(max_length=45, blank=True, null=True)
+
+    # IP range: 10.0.0.0 to 10.0.0.255
+    # CIDR notation: 10.0.0.0/24
+    #
+    # IP range: 172.16.0.0 to 172.16.0.31
+    # CIDR notation: 172.16.0.0/27
+    #
+    # IP range: 192.168.1.0 to 192.168.1.15
+    # CIDR notation: 192.168.1.0/28
+    # IP range 192.168.202.0 to 192.168.202.255, you can use the CIDR notation 192.168.202.0/24
+    ip_range = models.CharField(
+        help_text="IP range 192.168.202.0 to 192.168.202.255, you can use the CIDR notation 192.168.202.0/24",
+        max_length=18, blank=True, null=True)
+
+    ip_check_allowed = models.BooleanField(default=False)
+
     is_allowed = models.BooleanField(default=False)
+
     starts_with = models.BooleanField(default=False)
 
     def __str__(self):
