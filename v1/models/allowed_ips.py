@@ -30,6 +30,10 @@ class AllowedIP(models.Model):
     def __str__(self):
         return f"{self.route} "
 
+    class Meta:
+        verbose_name = '🛡 Allowed Resource'
+        verbose_name_plural = '🛡 Allowed Resources'
+
 
 class IP(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
@@ -50,3 +54,7 @@ class IP(models.Model):
 
     def __str__(self):
         return f"{self.description}  {self.ip_address} {self.ip_range}"
+
+    class Meta:
+        verbose_name = '🛡 IP Address '
+        verbose_name_plural = '🛡 IP Addresses '
