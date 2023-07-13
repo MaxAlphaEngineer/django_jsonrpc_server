@@ -38,6 +38,7 @@ class Services(models.Model):
     status = models.SmallIntegerField(default=StatusType.ACTIVE.value, choices=StatusType.choices)
     logging = models.SmallIntegerField(default=LoggingType.OFF.value, choices=LoggingType.choices)
     is_test = models.BooleanField(default=False)
+    is_crud = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "🎛 Services"

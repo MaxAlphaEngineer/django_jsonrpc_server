@@ -38,17 +38,33 @@ class ServicesAdminModel(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
         # Create a permission for the service
-        # Get the content type of the desired model associated with the view
-        # Create a permission for the service
-        codename = f"{obj.method_name}"
+        codename = f"{obj.method_name.lower()}"
         name = f"{obj.method_name}"
+
         # Get the content type of the desired model associated with the view
         permission = Permission.objects.filter(codename=codename).first()
+
+        # Create the permission associated with the app
+        c_t = ContentType.objects.filter(app_label=APP_LABEL).first()
         if not permission:
-            # Create the permission associated with the app
-            c_t = ContentType.objects.filter(app_label=APP_LABEL).first()
             Permission.objects.create(codename=codename, name=name,
                                       content_type=c_t)
+
+        # Create permissions based on the is_crud field
+        if obj.is_crud:
+            codename = obj.method_name.lower()
+            permissions = [
+                ('create', f"Can create {obj.method_name}"),
+                ('view', f"Can view {obj.method_name}"),
+                ('update', f"Can update {obj.method_name}"),
+                ('delete', f"Can delete {obj.method_name}")
+            ]
+
+            for perm in permissions:
+                perm_codename = f'{codename}.{perm[0]}'
+                permission = Permission.objects.filter(codename=perm_codename, content_type=c_t).first()
+                if not permission:
+                    Permission.objects.create(codename=perm_codename, name=perm[1], content_type=c_t)
 
 
 class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
