@@ -2,6 +2,8 @@ import urllib.parse
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -10,6 +12,7 @@ from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, Te
 from v1.models.users import Partner
 from .models import TelegramChat
 from .models.allowed_ips import IP
+from .utils.decorators import APP_LABEL
 from .utils.notify import notify
 
 
@@ -29,6 +32,23 @@ class PartnerAdmin(UserAdmin):
 @admin.register(Services)
 class ServicesAdminModel(admin.ModelAdmin):
     list_display = [field.name for field in Services._meta.fields]
+
+    def save_model(self, request, obj, form, change):
+        # Save the service
+        super().save_model(request, obj, form, change)
+
+        # Create a permission for the service
+        # Get the content type of the desired model associated with the view
+        # Create a permission for the service
+        codename = f"{obj.method_name}"
+        name = f"{obj.method_name}"
+        # Get the content type of the desired model associated with the view
+        permission = Permission.objects.filter(codename=codename).first()
+        if not permission:
+            # Create the permission associated with the app
+            c_t = ContentType.objects.filter(app_label=APP_LABEL).first()
+            Permission.objects.create(codename=codename, name=name,
+                                      content_type=c_t)
 
 
 class TechnicalIssuePeriodAdmin(admin.ModelAdmin):
