@@ -17,7 +17,7 @@
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
 from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import method, Result, Success, dispatch, Error
 
 from v1.modules import authorization
 from v1.services.sample import methods
@@ -28,7 +28,7 @@ from v1.utils.helper import json_response
 @method(name="login")
 def login(username, password, refresh=False) -> Result:
     response = authorization.login(username=username, password=password, refresh=refresh)
-    return Success(response)
+    return response_handler(response)
 
 
 @method
@@ -63,3 +63,14 @@ def jsonrpc(request):
     response = dispatch(request.data)
 
     return json_response(response)
+
+
+def response_handler(response):
+    print(response)
+    if 'result' in response:
+        return Success(response['result'])
+    if 'error' in response:
+        return Error(response['error'])
+    else:
+
+        return Error(response)

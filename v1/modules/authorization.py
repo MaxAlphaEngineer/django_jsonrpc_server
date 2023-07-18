@@ -28,20 +28,17 @@ def login(username, password, refresh):
         if token.exists():
             if refresh:
                 token.first().generate()
-            return {
-                "access_token": token.first().key
-            }
+
+            return token.first().rpc_result()
         else:
             token = AccessToken.objects.create(Partner=user)
             token.partner = user
             token.generate()
             token.save()
-            return {
-                "access_token": token.key
-            }
+            return token.rpc_result()
 
     else:
-        return error_message(-32101, rpc=True, json_response=True)
+        return error_message(-32101, rpc=True)
 
 
 def register(username, password):

@@ -85,3 +85,14 @@ class AccessToken(models.Model):
         self.save()
 
         return self.key
+
+    def rpc_result(self):
+        return {
+            "result": {
+                "access_token": self.key,
+                "is_test": self.Partner.is_test,
+                "is_superuser": self.Partner.is_superuser,
+                "is_staff": self.Partner.is_staff,
+                "is_active": self.Partner.is_active,
+            }
+        }
