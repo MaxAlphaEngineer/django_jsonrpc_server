@@ -15,14 +15,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-
+from django.contrib.auth.models import Permission
 from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, Result, Success, dispatch, Error
 
 from v1.modules import authorization
 from v1.services.sample import methods
 from v1.utils.decorators import requires_json
-from v1.utils.helper import json_response
+from v1.utils.helper import json_response, error_message
 
 
 @method(name="login")
@@ -35,13 +35,32 @@ def login(context, username, password, refresh=False) -> Result:
 def get_services(context) -> Result:
     # Get the list of permission codenames for the user
     user = context.get('user')
-    print(user)
-    permissions  =user.get_all_permissions()
 
-    print(permissions)
+    permissions = user.get_all_permissions()
 
     permissions = list(permissions)
     return Success(permissions)
+
+
+@method(name='check.service.permission')
+def check_service_permission(context, service_name) -> Result:
+    # Get the list of permission codenames for the user
+    user = context.get('user')
+
+    permission = Permission.objects.filter(codename=service_name).first()
+
+    if not permission:
+        # Create the permission associated with the app
+        return Success("Not found permission")
+
+
+    permission = f"v1.{permission.codename}"
+    print(permission)
+    if not user.has_perm(permission):
+        # User does not have the permission
+        return Success(False)
+
+    return Success(True)
 
 
 @method
@@ -73,7 +92,6 @@ def btc_price(context) -> Result:
 @csrf_exempt
 @requires_json
 def jsonrpc(request):
-
     context = {
         'user': request.user
     }
