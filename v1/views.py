@@ -19,10 +19,11 @@ from django.contrib.auth.models import Permission
 from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, Result, Success, dispatch, Error
 
+from v1.models import Services
 from v1.modules import authorization
 from v1.services.sample import methods
 from v1.utils.decorators import requires_json
-from v1.utils.helper import json_response, error_message
+from v1.utils.helper import json_response
 
 
 @method(name="login")
@@ -48,11 +49,32 @@ def check_service_permission(context, service_name) -> Result:
     user = context.get('user')
 
     permission = Permission.objects.filter(codename=service_name).first()
+    service = Services.objects.filter(method_name=service_name).first()
 
     if not permission:
         # Create the permission associated with the app
         return Success("Not found permission")
 
+    if service:
+        if service.is_crud:
+            keys = ['create', 'update', 'delete', 'view']
+
+            result = {}
+            for key in keys:
+                keyword = f'{service_name}.{key}'
+                state = Permission.objects.filter(codename=keyword).first()
+
+                res_key = f'can_{key}'
+                if not state:
+                    result[res_key] = False
+                else:
+                    permission = f"v1.{keyword}"
+                    if user.has_perm(permission):
+                        result[res_key] = True
+                    else:
+                        result[res_key] = False
+
+            return Success(result)
 
     permission = f"v1.{permission.codename}"
     print(permission)
