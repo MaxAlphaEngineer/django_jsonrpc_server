@@ -26,9 +26,22 @@ from v1.utils.helper import json_response
 
 
 @method(name="login")
-def login(username, password, refresh=False) -> Result:
+def login(context, username, password, refresh=False) -> Result:
     response = authorization.login(username=username, password=password, refresh=refresh)
     return response_handler(response)
+
+
+@method(name='get.services')
+def get_services(context) -> Result:
+    # Get the list of permission codenames for the user
+    user = context.get('user')
+    print(user)
+    permissions  =user.get_all_permissions()
+
+    print(permissions)
+
+    permissions = list(permissions)
+    return Success(permissions)
 
 
 @method
@@ -52,7 +65,7 @@ def delete() -> Result:
 
 
 @method(name="cbu.rates")
-def btc_price() -> Result:
+def btc_price(context) -> Result:
     response = methods.get_rates()
     return Success(response)
 
@@ -60,7 +73,12 @@ def btc_price() -> Result:
 @csrf_exempt
 @requires_json
 def jsonrpc(request):
-    response = dispatch(request.data)
+
+    context = {
+        'user': request.user
+    }
+
+    response = dispatch(request.data, context=context)
 
     return json_response(response)
 
