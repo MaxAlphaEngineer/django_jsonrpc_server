@@ -86,8 +86,8 @@ def check_service_permission(context, service_name) -> Result:
 
 
 @method
-def register() -> Result:
-    return Success("pong")
+def register(context) -> Result:
+    return Success("registered")
 
 
 @method
