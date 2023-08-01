@@ -57,7 +57,7 @@ class MyUser(HttpUser):
             }
 
             headers = {"Authorization": f"Bearer {self.access_token}"}
-            response = self.client.get(self.route, headers=headers)
+            response = self.client.post(self.route, headers=headers, json=payload)
             # Process data response as needed
         else:
             print("Login task did not provide access_token, cannot access data.")
