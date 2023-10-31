@@ -15,11 +15,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
-from django.contrib.auth.models import Permission
 from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, Result, Success, dispatch, Error
 
-from v1.models import Services
 from v1.modules import authorization
 from v1.services.sample import methods
 from v1.utils.decorators import requires_json
@@ -55,7 +53,6 @@ def jsonrpc(request):
 
 
 def response_handler(response):
-    print(response)
     if 'result' in response:
         return Success(response['result'])
     if 'error' in response:
