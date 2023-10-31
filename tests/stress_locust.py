@@ -25,7 +25,7 @@ class MyUser(HttpUser):
     access_token = None  # Initialize the access token attribute
     route = '/api/v1/jsonrpc'
 
-    @task
+    @task(1)
     def login_task(self):
         id = random.randint(1, 999999)
         # Perform the login and get the access token
@@ -43,21 +43,19 @@ class MyUser(HttpUser):
         if response.status_code == 200:
             self.access_token = response.json().get("result").get("access_token")
 
-    @task
+    @task(10)
     def register(self):
         # Check if access_token is available from the login task
-        if self.access_token:
-            id = random.randint(1, 999999)
-            # Perform the login and get the access token
-            payload = {
-                "jsonrpc": "2.0",
-                "id": id,
-                "method": "register",
-                "params": []
-            }
 
-            headers = {"Authorization": f"Bearer {self.access_token}"}
-            response = self.client.post(self.route, headers=headers, json=payload)
-            # Process data response as needed
-        else:
-            print("Login task did not provide access_token, cannot access data.")
+        id = random.randint(1, 999999)
+        # Perform the login and get the access token
+        payload = {
+            "jsonrpc": "2.0",
+            "id": id,
+            "method": "register",
+            "params": []
+        }
+
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        response = self.client.post(self.route, headers=headers, json=payload)
+        # Process data response as needed

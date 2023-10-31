@@ -17,13 +17,15 @@ Django settings for api project.
 import os
 from pathlib import Path
 
-
-# Common settings applicable to both local and production environments
-from env.base import *
-
+APP_NAME = "app_name"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
+
+# Common settings applicable to both local and production environments
+from env.base import *
 
 PROJECT_CONFIG = config
 

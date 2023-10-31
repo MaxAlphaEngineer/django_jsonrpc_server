@@ -22,6 +22,12 @@ from pathlib import Path
 config = configparser.ConfigParser()
 config.read('env/config.ini')
 
+# Logging FLAG all requests and responses
+LOGGING = False
+
+# IP address white list FLAG
+IP_CHECK = False
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,9 +56,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'v1.utils.logger.APILoggerMiddleware',
-    'v1.middlewares.ip_range_middleware.IPRangeMiddleware'
 ]
+
+if LOGGING:
+    MIDDLEWARE.append('v1.utils.logger.APILoggerMiddleware')
+
+if IP_CHECK:
+    MIDDLEWARE.append('v1.middlewares.ip_range_middleware.IPRangeMiddleware')
+
 
 ROOT_URLCONF = 'api.urls'
 

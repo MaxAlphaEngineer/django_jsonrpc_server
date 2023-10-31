@@ -19,6 +19,8 @@ from datetime import datetime
 
 from django.http import JsonResponse
 
+from settings import APP_NAME
+
 
 class Actuator:
     def __init__(self):
@@ -30,6 +32,7 @@ class Actuator:
         response = {
             'status': 'UP',
             'uptime': f'{up_time}s',
+            'app_name': f'{APP_NAME}s',
             'db': db_status(start_time),
             'cache': cache_status(start_time),
             'memory': memory_status(start_time),

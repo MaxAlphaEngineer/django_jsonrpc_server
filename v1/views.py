@@ -31,78 +31,9 @@ def login(context, username, password, refresh=False) -> Result:
     response = authorization.login(username=username, password=password, refresh=refresh)
     return response_handler(response)
 
-
-@method(name='get.services')
-def get_services(context) -> Result:
-    # Get the list of permission codenames for the user
-    user = context.get('user')
-
-    permissions = user.get_all_permissions()
-
-    permissions = list(permissions)
-    return Success(permissions)
-
-
-@method(name='check.service.permission')
-def check_service_permission(context, service_name) -> Result:
-    # Get the list of permission codenames for the user
-    user = context.get('user')
-
-    permission = Permission.objects.filter(codename=service_name).first()
-    service = Services.objects.filter(method_name=service_name).first()
-
-    if not permission:
-        # Create the permission associated with the app
-        return Success("Not found permission")
-
-    if service:
-        if service.is_crud:
-            keys = ['create', 'update', 'delete', 'view']
-
-            result = {}
-            for key in keys:
-                keyword = f'{service_name}.{key}'
-                state = Permission.objects.filter(codename=keyword).first()
-
-                res_key = f'can_{key}'
-                if not state:
-                    result[res_key] = False
-                else:
-                    permission = f"v1.{keyword}"
-                    if user.has_perm(permission):
-                        result[res_key] = True
-                    else:
-                        result[res_key] = False
-
-            return Success(result)
-
-    permission = f"v1.{permission.codename}"
-    print(permission)
-    if not user.has_perm(permission):
-        # User does not have the permission
-        return Success(False)
-
-    return Success(True)
-
-
 @method
-def register(context) -> Result:
-    return Success("registered")
-
-
-@method
-def create() -> Result:
-    return Success("Create")
-
-
-@method
-def update() -> Result:
-    return Success("Update")
-
-
-@method
-def delete() -> Result:
-    return Success("Update")
+def ping(context) -> Result:
+    return Success("pong")
 
 
 @method(name="cbu.rates")
