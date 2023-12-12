@@ -19,7 +19,7 @@ from datetime import datetime
 
 from django.http import JsonResponse
 
-from settings import APP_NAME
+from env.base import APP_NAME
 
 
 class Actuator:

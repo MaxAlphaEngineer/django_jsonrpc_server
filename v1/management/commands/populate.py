@@ -238,6 +238,7 @@ rpc_errors = [
         "en": "Authorization token expired or not valid"
     },
 
+
     {
         "code": -32104,
         "origin": "connection",
@@ -252,6 +253,30 @@ rpc_errors = [
         "uz": "Ruxsat etilmagan metod so'rovi",
         "ru": "Недопустимый запрос метода",
         "en": "Not allowed method request"
+    },
+
+{
+        "code": -32106,
+        "origin": "authorization",
+        "uz": "Header login taqdim etilmagan",
+        "ru": "Header login не указан",
+        "en": "Header login is not provided"
+    },
+
+    {
+        "code": -32107,
+        "origin": "authorization",
+        "uz": "Header sign taqdim etilmagan",
+        "ru": "Header sign не указан",
+        "en": "Header sign is not provided"
+    },
+
+{
+        "code": -32108,
+        "origin": "authorization",
+        "uz": "Header sign orqali avtorizatsiya muvaffiqayatsiz",
+        "ru": "Авторизация с использованием Header sign не удалась",
+        "en": "Authorization using Header sign is failed"
     },
     # TERMINAL
 

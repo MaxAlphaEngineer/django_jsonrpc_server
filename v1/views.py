@@ -56,7 +56,7 @@ def response_handler(response):
     if 'result' in response:
         return Success(response['result'])
     if 'error' in response:
-        return Error(response['error'])
+        return Error(response['error']['code'], response['error']['message'])
     else:
 
         return Error(response)

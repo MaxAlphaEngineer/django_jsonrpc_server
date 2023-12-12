@@ -18,9 +18,20 @@
 import datetime
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
 
+from env.base import APP_NAME
 from v1.models import Errors
+
+
+def make_dirs(paths):
+    directory = settings.BASE_DIR
+    for path in paths:
+        directory /= path
+        if not directory.exists():
+            directory.mkdir()
+    return directory
 
 
 def error_message(code, message=None, origin="", request_id=None, wrapper=False, rpc=False, json_response=False,
@@ -65,7 +76,7 @@ def error_message(code, message=None, origin="", request_id=None, wrapper=False,
             "status": False,
             "origin": origin,
             "host": {
-                "host": "settings.APP_NAME",
+                "host": f'{APP_NAME}',
                 "timestamp": str(datetime.datetime.now())
             }
         }

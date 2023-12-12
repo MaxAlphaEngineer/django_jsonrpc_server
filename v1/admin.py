@@ -1,15 +1,23 @@
+import os
+import secrets
+import shutil
 import urllib.parse
+import zipfile
 
+import pyzipper
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from v1.models import Services, Errors, AllowedIP
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TechnicalIssuePeriodTemplate
 from v1.models.users import Partner
+from .forms import PartnerCreationForm
 from .models import TelegramChat
 from .models.allowed_ips import IP
 from .utils.decorators import APP_LABEL
@@ -18,15 +26,94 @@ from .utils.notify import notify
 
 @admin.register(Partner)
 class PartnerAdmin(UserAdmin):
+    actions = ['generate_secret_key', 'download_secret_key', 'download_credentials']
     list_display = 'id', 'username', 'identity', 'is_active', 'is_test', 'is_superuser', 'is_staff'
     list_display_links = 'id', 'username'
     list_editable = ['identity', 'is_active']
+    add_form = PartnerCreationForm
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'file_password'),
+        }),
+    )
     fieldsets = (
         ("Partner Credentials",
-         {"fields": ("username", "password", "identity", 'chats')}),
+         {"fields": ("username", "password", "secret", "identity", 'chats')}),
         (_("Permissions"),
          {"fields": ("is_active", "is_test", "is_staff", "is_superuser", "groups", "user_permissions")})
     )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj = Partner.objects.create_user(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password1'],
+                file_password=form.cleaned_data['file_password']
+            )
+        return super().save_model(request, obj, form, True)
+
+
+    def generate_secret_key(self, request, queryset):
+        for user in queryset:
+            user.secret = secrets.token_hex(32)  # Generating a 256-bit (32-byte) hex token
+            user.save()
+
+        self.message_user(request, f'Secret keys generated for {queryset.count()} users.')
+
+    generate_secret_key.short_description = 'Generate Secret Key for Selected Users'
+
+    def download_credentials(self, request, queryset):
+        if queryset.count() == 1:
+            user = queryset.first()
+            # Serve the protected zip file as a response
+            with open(user.path_to_protected_zip, 'rb') as zip_file_protected:
+                response = HttpResponse(zip_file_protected.read(), content_type='application/zip')
+                response['Content-Disposition'] = f'attachment; filename="{slugify(user.username)}_secret.zip"'
+                response['Content-Length'] = os.path.getsize(user.path_to_protected_zip)
+                return response
+        self.message_user(request, 'Please select only one user for this action.')
+
+    def download_secret_key(self, request, queryset):
+        if queryset.count() == 1:
+            user = queryset.first()
+            secret_key = user.secret  # Replace with your actual attribute name
+            username = user.username
+            password =  user.password # Replace with the actual attribute name for the login password
+
+            # Create a temporary directory
+            temp_dir = os.path.join('/tmp', slugify(user.username))
+            os.makedirs(temp_dir, exist_ok=True)
+
+            # Create a text file with the secret key
+            secret_file_path = os.path.join(temp_dir, 'secret.txt')
+            with open(secret_file_path, 'w') as secret_file:
+                secret_file.write(f'Secret Key: {secret_key}\n')
+                secret_file.write(f'Username: {username}\n')
+                secret_file.write(f'Password: {password}\n')
+
+            # Create a password-protected zip file
+            password = secrets.token_urlsafe(16)
+            zip_file_path_protected = os.path.join('/tmp', f'{slugify(user.username)}_secret.zip')
+            with pyzipper.AESZipFile(zip_file_path_protected, 'w', compression=pyzipper.ZIP_DEFLATED,
+                                     encryption=pyzipper.WZ_AES) as zip_file:
+                zip_file.setpassword(bytes(password, 'utf-8'))
+                zip_file.write(secret_file_path, 'secret.txt')
+
+            print(password)
+            # Clean up temporary files
+            shutil.rmtree(temp_dir)
+
+            # Serve the protected zip file as a response
+            with open(zip_file_path_protected, 'rb') as zip_file_protected:
+                response = HttpResponse(zip_file_protected.read(), content_type='application/zip')
+                response['Content-Disposition'] = f'attachment; filename="{slugify(user.username)}_secret.zip"'
+                response['Content-Length'] = os.path.getsize(zip_file_path_protected)
+                return response
+
+        self.message_user(request, 'Please select only one user for this action.')
+
+    download_secret_key.short_description = 'Download Secret Key as Protected Zip'
 
 
 @admin.register(Services)
