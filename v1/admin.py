@@ -2,22 +2,29 @@ import os
 import secrets
 import shutil
 import urllib.parse
-import zipfile
 
 import pyzipper
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib import admin, messages
+from django.contrib.admin.helpers import AdminForm
+from django.contrib.admin.utils import unquote
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.admin import UserAdmin, sensitive_post_parameters_m
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.text import slugify
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.contrib.admin.options import IS_POPUP_VAR
 
 from v1.models import Services, Errors, AllowedIP
 from v1.models.service import TechnicalIssuePeriod, TechnicalIssuePeriodForm, TechnicalIssuePeriodTemplate
 from v1.models.users import Partner
-from .forms import PartnerCreationForm
 from .models import TelegramChat
 from .models.allowed_ips import IP
 from .utils.decorators import APP_LABEL
@@ -30,13 +37,6 @@ class PartnerAdmin(UserAdmin):
     list_display = 'id', 'username', 'identity', 'is_active', 'is_test', 'is_superuser', 'is_staff'
     list_display_links = 'id', 'username'
     list_editable = ['identity', 'is_active']
-    add_form = PartnerCreationForm
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'file_password'),
-        }),
-    )
     fieldsets = (
         ("Partner Credentials",
          {"fields": ("username", "password", "secret", "identity", 'chats')}),
@@ -44,24 +44,78 @@ class PartnerAdmin(UserAdmin):
          {"fields": ("is_active", "is_test", "is_staff", "is_superuser", "groups", "user_permissions")})
     )
 
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj = Partner.objects.create_user(
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password1'],
-                file_password=form.cleaned_data['file_password']
+    @sensitive_post_parameters_m
+    def user_change_password(self, request, id, form_url=""):
+        user = self.get_object(request, unquote(id))
+        if not self.has_change_permission(request, user):
+            raise PermissionDenied
+        if user is None:
+            raise Http404(
+                _("%(name)s object with primary key %(key)r does not exist.")
+                % {
+                    "name": self.opts.verbose_name,
+                    "key": escape(id),
+                }
             )
-        return super().save_model(request, obj, form, True)
+        if request.method == "POST":
+            form = self.change_password_form(user, request.POST)
+            if form.is_valid():
+                form.save()
+                change_message = self.construct_change_message(request, form, None)
+                self.log_change(request, user, change_message)
+                msg = gettext("Password changed successfully.")
+                messages.success(request, f'File password is: {user._file_password}')
+                messages.success(request, msg)
+                update_session_auth_hash(request, form.user)
+                return HttpResponseRedirect(
+                    reverse(
+                        "%s:%s_%s_change"
+                        % (
+                            self.admin_site.name,
+                            user._meta.app_label,
+                            user._meta.model_name,
+                        ),
+                        args=(user.pk,),
+                    )
+                )
+        else:
+            form = self.change_password_form(user)
 
+        fieldsets = [(None, {"fields": list(form.base_fields)})]
+        admin_form = AdminForm(form, fieldsets, {})
 
-    def generate_secret_key(self, request, queryset):
-        for user in queryset:
-            user.secret = secrets.token_hex(32)  # Generating a 256-bit (32-byte) hex token
-            user.save()
+        context = {
+            "title": _("Change password: %s") % escape(user.get_username()),
+            "adminForm": admin_form,
+            "form_url": form_url,
+            "form": form,
+            "is_popup": (IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET),
+            "is_popup_var": IS_POPUP_VAR,
+            "add": True,
+            "change": False,
+            "has_delete_permission": False,
+            "has_change_permission": True,
+            "has_absolute_url": False,
+            "opts": self.opts,
+            "original": user,
+            "save_as": False,
+            "show_save": True,
+            **self.admin_site.each_context(request),
+        }
 
-        self.message_user(request, f'Secret keys generated for {queryset.count()} users.')
+        request.current_app = self.admin_site.name
 
-    generate_secret_key.short_description = 'Generate Secret Key for Selected Users'
+        return TemplateResponse(
+            request,
+            self.change_user_password_template
+            or "admin/auth/user/change_password.html",
+            context,
+        )
+
+    def save_model(self, request, obj, form, change):
+        result = super().save_model(request, obj, form, change)
+        self.message_user(request, f'File password is: {obj._file_password}')
+        return result
 
     def download_credentials(self, request, queryset):
         if queryset.count() == 1:

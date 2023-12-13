@@ -36,10 +36,11 @@ from v1.utils.helper import make_dirs
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, password, file_password, **extra_fields):
+    def create_user(self, username, password, **extra_fields):
+        # file_password = extra_fields.pop('file_password')
         user = self.model(username=username, **extra_fields)
         print("here setting password")
-        user.set_password(password, file_password)
+        user.set_password(password, '12345')
         user.save()
         return user
 
@@ -102,7 +103,6 @@ class Partner(AbstractBaseUser, PermissionsMixin):
 
 
         password = file_password
-        print(password)
         with pyzipper.AESZipFile(self.path_to_protected_zip,
                                  'w', compression=pyzipper.ZIP_DEFLATED,
                                  encryption=pyzipper.WZ_AES) as zip_file:
@@ -110,9 +110,10 @@ class Partner(AbstractBaseUser, PermissionsMixin):
             zip_file.write(secret_file_path, 'secret.txt')
         shutil.rmtree(temp_dir)
 
-    def set_password(self, raw_password, file_password):
+    def set_password(self, raw_password):
         self.generate_secret_key()
-        self.generate_protected_zip_with_secret_key_and_password(raw_password, file_password)
+        self._file_password = secrets.token_urlsafe(16)
+        self.generate_protected_zip_with_secret_key_and_password(raw_password, self._file_password)
         super().set_password(raw_password)
 
 

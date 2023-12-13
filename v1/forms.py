@@ -23,15 +23,12 @@ from django.contrib.auth.forms import UserCreationForm, BaseUserCreationForm
 from v1.models import Partner
 
 
-class PartnerCreationForm(UserCreationForm):
+class PartnerCreationForm(BaseUserCreationForm):
     file_password = forms.CharField(max_length=100, required=True, help_text='Enter zip file password')
 
-    class Meta:
-        model = Partner
-        fields = UserCreationForm.Meta.fields + ('file_password',)
-
     # def save(self, commit=True):
-    #     user = super(BaseUserCreationForm).save(commit=False)
+    #     user = self.instance
+    #     # user.set_password(self.cleaned_data["password1"])
     #     user.set_password(self.cleaned_data["password1"], self.cleaned_data['file_password'])
     #     if commit:
     #         user.save()
