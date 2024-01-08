@@ -78,6 +78,19 @@ POST http://127.0.0.1:8000/api/v1/jsonrpc
 }
 ```
 
+⚠️ When using in Postman it is recommended to generate digest in pre request:
+1. Create Environment and create variables: secret and set Secret value
+2. In pre request Script add below script:
+   ```
+   var secret = postman.getEnvironmentVariable("secret");
+   
+   var encrypted = CryptoJS.HmacSHA256(request.data, secret);
+   
+   postman.setEnvironmentVariable('digest', CryptoJS.enc.Base64.stringify(encrypted));
+   ```
+
+Collection sample
+
 8. Admin Dashboard
    Open in browser http://127.0.0.1:8000/admin
 
