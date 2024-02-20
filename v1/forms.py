@@ -16,11 +16,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with "Django JsonRPC Server Template".  If not, see <http://www.gnu.org/licenses/>.
 
-# myapp/forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, BaseUserCreationForm
-
-from v1.models import Partner
+from django.contrib.auth.forms import BaseUserCreationForm
 
 
 class PartnerCreationForm(BaseUserCreationForm):

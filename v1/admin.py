@@ -110,8 +110,11 @@ class PartnerAdmin(UserAdmin):
         )
 
     def save_model(self, request, obj, form, change):
+        if not change:
+            obj.set_password(form.cleaned_data['password'])  # Assuming 'password' is the field name in your form
+            obj.save()  # Save the object to generate the file password
+            self.message_user(request, f'File password is: {obj._file_password}')
         result = super().save_model(request, obj, form, change)
-        self.message_user(request, f'File password is: {obj._file_password}')
         return result
 
     def download_credentials(self, request, queryset):
